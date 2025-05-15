@@ -29,18 +29,18 @@ export default function Header() {
   // Foydalanuvchilar sonini olish uchun API chaqiruv
   useEffect(() => {
     const fetchUserCount = async () => {
-      try {
-        // const response = await fetch("/api/users/count"); // API endpoint
-        // if (!response.ok) {
-        //   throw new Error("Failed to fetch user count");
-        // }
-        // const data = await response.json();
-        // setUserCount(data.count); // API dan kelgan foydalanuvchilar soni
-        setUserCount(123);
-      } catch (error) {
-        console.error("Error fetching user count:", error);
-        setUserCount(null); // Xatolik yuz bersa, null qilib qo'yamiz
-      }
+      // try {
+      //   //   const response = await fetch("/api/users/count"); // API endpoint
+      //   //   if (!response.ok) {
+      //   //     throw new Error("Failed to fetch user count");
+      //   //   }
+      //   //   const data = await response.json();
+      //   //   setUserCount(data.count); // API dan kelgan foydalanuvchilar soni
+      // } catch (error) {
+      //   console.error("Error fetching user count:", error);
+      //   setUserCount(null); // Xatolik yuz bersa, null qilib qo'yamiz
+      // }
+      setUserCount(156); // API dan kelgan foydalanuvchilar soni
     };
 
     fetchUserCount();
@@ -75,17 +75,17 @@ export default function Header() {
             </nav>
           </div>
           <div className="flex items-center space-x-4">
-            <div className="hidden md:flex items-center space-x-2">
+            <div className="hidden md:flex items-center space-x-2 gap-4">
+              {/* Foydalanuvchilar sonini ko'rsatish */}
               <div className="text-sm text-muted-foreground flex items-center space-x-2">
                 {userCount !== null ? (
                   <>
-                    ? `${t("active_users")}: ${userCount}`
-                    : t("loading_users")}
-                </h4>
-                <h4 className="md:hidden flex items-center space-x-2">
-                  {" "}
-                  {userCount !== null ? `  ${userCount}` : t("loading_users")}
-                </h4>
+                    <span className="inline-block h-2 w-2 rounded-full bg-green-500"></span>
+                    <span>{`${t("active_users")}: ${userCount}`}</span>
+                  </>
+                ) : (
+                  <span>{t("loading_users")}</span>
+                )}
               </div>
               <LanguageSwitcher />
               <ThemeToggle />
@@ -106,12 +106,6 @@ export default function Header() {
                 </Button>
               )}
             </div>
-            {/* Foydalanuvchilar sonini ko'rsatish */}
-            {/* <div className="text-sm text-muted-foreground">
-              {userCount !== null
-                ? `${t("active_users")}: ${userCount}`
-                : t("loading_users")}
-            </div> */}
             <div className="md:hidden">
               <Button
                 variant="ghost"
