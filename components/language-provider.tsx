@@ -1,17 +1,17 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { createContext, useContext, useState, useEffect } from "react"
-import { useLocalStorage } from "@/hooks/use-local-storage"
+import type React from "react";
+import { createContext, useContext, useState, useEffect } from "react";
+import { useLocalStorage } from "@/hooks/use-local-storage";
 
-type Language = "en" | "ru" | "uz" | "kz" | "kg" | "tj" | "cn"
-type Currency = "USD" | "RUB" | "UZS" | "KZT" | "KGS" | "TJS" | "CNY"
+type Language = "en" | "ru" | "uz" | "kz" | "kg" | "tj" | "cn";
+type Currency = "USD" | "RUB" | "UZS" | "KZT" | "KGS" | "TJS" | "CNY";
 
 interface LanguageContextType {
-  language: Language
-  setLanguage: (lang: Language) => void
-  currency: Currency
-  t: (key: string) => string
+  language: Language;
+  setLanguage: (lang: Language) => void;
+  currency: Currency;
+  t: (key: string) => string;
 }
 
 const languageCurrencyMap: Record<Language, Currency> = {
@@ -22,7 +22,7 @@ const languageCurrencyMap: Record<Language, Currency> = {
   kg: "KGS",
   tj: "TJS",
   cn: "CNY",
-}
+};
 
 // Currency conversion rates (simplified for demo)
 const currencyRates: Record<Currency, number> = {
@@ -33,7 +33,7 @@ const currencyRates: Record<Currency, number> = {
   KGS: 90,
   TJS: 12,
   CNY: 7,
-}
+};
 
 const translations: Record<Language, Record<string, string>> = {
   en: {
@@ -61,7 +61,8 @@ const translations: Record<Language, Record<string, string>> = {
     paymentStatus: "Payment Status",
     purchase: "Purchase",
     pay: "Pay",
-    waitPayment: "Please wait. Payment card number will be provided within 2 minutes",
+    waitPayment:
+      "Please wait. Payment card number will be provided within 2 minutes",
     completePayment: "Complete payment and upload receipt within 10 minutes",
     uploadReceipt: "Upload Receipt",
     cardNumber: "Card Number",
@@ -134,7 +135,8 @@ const translations: Record<Language, Record<string, string>> = {
       "We are committed to offering premium health and beauty products while enabling our partners to build sustainable businesses and achieve financial independence.",
     howItWorks: "How It Works",
     joinUs: "Join Us",
-    joinUsDesc: "Register on our platform and create your personal account. It's free and takes only a few minutes.",
+    joinUsDesc:
+      "Register on our platform and create your personal account. It's free and takes only a few minutes.",
     chooseTariff: "Choose a Tariff",
     chooseTariffDesc:
       "Select a tariff plan that suits your goals and budget. Each plan offers different benefits and earning potential.",
@@ -142,12 +144,14 @@ const translations: Record<Language, Record<string, string>> = {
     earnMoneyDesc:
       "Start earning daily income from your tariff and build your network to increase your earnings through referrals.",
     readyToStart: "Ready to Start?",
-    readyToStartDesc: "Join thousands of successful partners who are already earning with our MLM platform.",
+    readyToStartDesc:
+      "Join thousands of successful partners who are already earning with our MLM platform.",
     getStarted: "Get Started",
     viewTariffs: "View Tariffs",
     products: "Products",
     about: "About",
-    referralBonusInfo: "You'll earn bonuses when your referrals register and add funds to their balance.",
+    referralBonusInfo:
+      "You'll earn bonuses when your referrals register and add funds to their balance.",
     shareReferralLink: "Share Referral Link",
     copied: "Copied!",
     referralLinkCopied: "Referral link copied to clipboard!",
@@ -158,7 +162,8 @@ const translations: Record<Language, Record<string, string>> = {
     availableBalance: "Available balance",
     processing: "Processing...",
     withdrawalHistory: "Withdrawal History",
-    withdrawalPendingApproval: "Your withdrawal request is pending administrator approval.",
+    withdrawalPendingApproval:
+      "Your withdrawal request is pending administrator approval.",
     addNewCard: "Add New Card",
     skincare: "Skincare",
     supplements: "Supplements",
@@ -175,12 +180,15 @@ const translations: Record<Language, Record<string, string>> = {
     viewDetails: "View Details",
     home: "Home",
     productNotFound: "Product Not Found",
-    productNotFoundDesc: "The product you are looking for does not exist or has been removed.",
+    productNotFoundDesc:
+      "The product you are looking for does not exist or has been removed.",
     backToProducts: "Back to Products",
     addedToCart: "Added to Cart",
     addedToCartDesc: "has been added to your cart",
     addedToWishlist: "Added to Wishlist",
     addedToWishlistDesc: "has been added to your wishlist",
+    active_users: "Active Users",
+    loading_users: "Loading users...",
   },
   ru: {
     welcome: "Добро пожаловать",
@@ -207,8 +215,10 @@ const translations: Record<Language, Record<string, string>> = {
     paymentStatus: "Статус оплаты",
     purchase: "Купить",
     pay: "Оплатить",
-    waitPayment: "Пожалуйста, подождите. Номер карты будет предоставлен в течение 2 минут",
-    completePayment: "Завершите оплату и загрузите квитанцию в течение 10 минут",
+    waitPayment:
+      "Пожалуйста, подождите. Номер карты будет предоставлен в течение 2 минут",
+    completePayment:
+      "Завершите оплату и загрузите квитанцию в течение 10 минут",
     uploadReceipt: "Загрузить квитанцию",
     cardNumber: "Номер карты",
     requestWithdrawal: "Запросить вывод",
@@ -248,7 +258,8 @@ const translations: Record<Language, Record<string, string>> = {
     tariffPrice: "Цена тарифа",
     information: "Информация",
     changePassword: "Изменить пароль",
-    changePasswordDesc: "Обновите свой пароль для обеспечения безопасности аккаунта",
+    changePasswordDesc:
+      "Обновите свой пароль для обеспечения безопасности аккаунта",
     currentPassword: "Текущий пароль",
     newPassword: "Новый пароль",
     confirmPassword: "Подтвердите пароль",
@@ -289,23 +300,27 @@ const translations: Record<Language, Record<string, string>> = {
     earnMoneyDesc:
       "Начните получать ежедневный доход от вашего тарифа и развивайте свою сеть, чтобы увеличить заработок через рефералов.",
     readyToStart: "Готовы начать?",
-    readyToStartDesc: "Присоединяйтесь к тысячам успешных партнеров, которые уже зарабатывают с нашей MLM платформой.",
+    readyToStartDesc:
+      "Присоединяйтесь к тысячам успешных партнеров, которые уже зарабатывают с нашей MLM платформой.",
     getStarted: "Начать",
     viewTariffs: "Посмотреть тарифы",
     products: "Продукты",
     about: "О нас",
-    referralBonusInfo: "Вы будете получать бонусы, когда ваши рефералы регистрируются и пополняют свой баланс.",
+    referralBonusInfo:
+      "Вы будете получать бонусы, когда ваши рефералы регистрируются и пополняют свой баланс.",
     shareReferralLink: "Поделиться реферальной ссылкой",
     copied: "Скопировано!",
     referralLinkCopied: "Реферальная ссылка скопирована в буфер обмена!",
     joinMlmPlatform: "Присоединяйтесь к MLM платформе",
-    joinMeOnMlm: "Присоединяйтесь ко мне на MLM платформе и начните зарабатывать!",
+    joinMeOnMlm:
+      "Присоединяйтесь ко мне на MLM платформе и начните зарабатывать!",
     selectCard: "Выберите карту",
     amount: "Сумма",
     availableBalance: "Доступный баланс",
     processing: "Обработка...",
     withdrawalHistory: "История выводов",
-    withdrawalPendingApproval: "Ваш запрос на вывод средств ожидает одобрения администратора.",
+    withdrawalPendingApproval:
+      "Ваш запрос на вывод средств ожидает одобрения администратора.",
     addNewCard: "Добавить новую карту",
     skincare: "Уход за кожей",
     supplements: "Добавки",
@@ -322,12 +337,15 @@ const translations: Record<Language, Record<string, string>> = {
     viewDetails: "Подробнее",
     home: "Главная",
     productNotFound: "Товар не найден",
-    productNotFoundDesc: "Товар, который вы ищете, не существует или был удален.",
+    productNotFoundDesc:
+      "Товар, который вы ищете, не существует или был удален.",
     backToProducts: "Назад к продуктам",
     addedToCart: "Добавлено в корзину",
     addedToCartDesc: "добавлен в вашу корзину",
     addedToWishlist: "Добавлено в избранное",
     addedToWishlistDesc: "добавлен в ваше избранное",
+    active_users: "Активные пользователи",
+    loading_users: "Загрузка пользователей...",
   },
   uz: {
     welcome: "Xush kelibsiz",
@@ -355,7 +373,8 @@ const translations: Record<Language, Record<string, string>> = {
     purchase: "Sotib olish",
     pay: "To'lash",
     waitPayment: "Iltimos, kuting. Karta raqami 2 daqiqa ichida taqdim etiladi",
-    completePayment: "To'lovni yakunlang va 10 daqiqa ichida kvitansiyani yuklang",
+    completePayment:
+      "To'lovni yakunlang va 10 daqiqa ichida kvitansiyani yuklang",
     uploadReceipt: "Kvitansiyani yuklash",
     cardNumber: "Karta raqami",
     requestWithdrawal: "Pul yechishni so'rash",
@@ -395,7 +414,8 @@ const translations: Record<Language, Record<string, string>> = {
     tariffPrice: "Tarif narxi",
     information: "Ma'lumot",
     changePassword: "Parolni o'zgartirish",
-    changePasswordDesc: "Hisobingiz xavfsizligini ta'minlash uchun parolingizni yangilang",
+    changePasswordDesc:
+      "Hisobingiz xavfsizligini ta'minlash uchun parolingizni yangilang",
     currentPassword: "Joriy parol",
     newPassword: "Yangi parol",
     confirmPassword: "Parolni tasdiqlang",
@@ -419,7 +439,8 @@ const translations: Record<Language, Record<string, string>> = {
     weekly: "Haftalik",
     monthly: "Oylik",
     aboutUs: "Biz haqimizda",
-    aboutUsDesc: "MLM platformamiz va uning ishlash tartibi haqida ko'proq ma'lumot oling",
+    aboutUsDesc:
+      "MLM platformamiz va uning ishlash tartibi haqida ko'proq ma'lumot oling",
     ourMission: "Bizning vazifamiz",
     ourMissionDesc:
       "Bizning vazifamiz - barcha uchun shaffof va daromadli MLM platformasini taqdim etish. Biz sifatli mahsulotlar va adolatli mukofot rejasi orqali moliyaviy o'sish imkoniyatlarini yaratishga ishonamiz.",
@@ -442,18 +463,21 @@ const translations: Record<Language, Record<string, string>> = {
     viewTariffs: "Tariflarni ko'rish",
     products: "Mahsulotlar",
     about: "Biz haqimizda",
-    referralBonusInfo: "Referallaringiz ro'yxatdan o'tganda va balanslarini to'ldirganda bonus olasiz.",
+    referralBonusInfo:
+      "Referallaringiz ro'yxatdan o'tganda va balanslarini to'ldirganda bonus olasiz.",
     shareReferralLink: "Referal havolani ulashish",
     copied: "Nusxalandi!",
     referralLinkCopied: "Referal havola nusxalandi!",
     joinMlmPlatform: "MLM platformasiga qo'shiling",
-    joinMeOnMlm: "MLM platformasida menga qo'shiling va pul ishlashni boshlang!",
+    joinMeOnMlm:
+      "MLM platformasida menga qo'shiling va pul ishlashni boshlang!",
     selectCard: "Kartani tanlang",
     amount: "Miqdor",
     availableBalance: "Mavjud balans",
     processing: "Ishlov berilmoqda...",
     withdrawalHistory: "Pul yechish tarixi",
-    withdrawalPendingApproval: "Pul yechish so'rovingiz administrator tomonidan tasdiqlanishini kutmoqda.",
+    withdrawalPendingApproval:
+      "Pul yechish so'rovingiz administrator tomonidan tasdiqlanishini kutmoqda.",
     addNewCard: "Yangi karta qo'shish",
     skincare: "Teri parvarishi",
     supplements: "Qo'shimchalar",
@@ -470,12 +494,15 @@ const translations: Record<Language, Record<string, string>> = {
     viewDetails: "Batafsil",
     home: "Bosh sahifa",
     productNotFound: "Mahsulot topilmadi",
-    productNotFoundDesc: "Siz qidirayotgan mahsulot mavjud emas yoki olib tashlangan.",
+    productNotFoundDesc:
+      "Siz qidirayotgan mahsulot mavjud emas yoki olib tashlangan.",
     backToProducts: "Mahsulotlarga qaytish",
     addedToCart: "Savatga qo'shildi",
     addedToCartDesc: "savatga qo'shildi",
     addedToWishlist: "Sevimlilarga qo'shildi",
     addedToWishlistDesc: "sevimlilar ro'yxatiga qo'shildi",
+    active_users: "Faol foydalanuvchilar",
+    loading_users: "Foydalanuvchilar yuklanmoqda...",
   },
   kz: {
     welcome: "Қош келдіңіз",
@@ -543,7 +570,8 @@ const translations: Record<Language, Record<string, string>> = {
     tariffPrice: "Тариф бағасы",
     information: "Ақпарат",
     changePassword: "Құпия сөзді өзгерту",
-    changePasswordDesc: "Тіркелгіңіздің қауіпсіздігін қамтамасыз ету үшін құпия сөзіңізді жаңартыңыз",
+    changePasswordDesc:
+      "Тіркелгіңіздің қауіпсіздігін қамтамасыз ету үшін құпия сөзіңізді жаңартыңыз",
     currentPassword: "Ағымдағы құпия сөз",
     newPassword: "Жаңа құпия сөз",
     confirmPassword: "Құпия сөзді растау",
@@ -567,7 +595,8 @@ const translations: Record<Language, Record<string, string>> = {
     weekly: "Апта сайын",
     monthly: "Ай сайын",
     aboutUs: "Біз туралы",
-    aboutUsDesc: "MLM платформамыз және оның жұмыс істеу тәртібі туралы көбірек білу",
+    aboutUsDesc:
+      "MLM платформамыз және оның жұмыс істеу тәртібі туралы көбірек білу",
     ourMission: "Біздің миссиямыз",
     ourMissionDesc:
       "Біздің миссиямыз - барлығына ашық және табысты MLM платформасын ұсыну. Біз сапалы өнімдер мен әділ сыйақы жоспары арқылы қаржылық өсу мүмкіндіктерін жасауға сенеміз.",
@@ -575,7 +604,8 @@ const translations: Record<Language, Record<string, string>> = {
       "Біз серіктестерімізге тұрақты бизнес құруға және қаржылық тәуелсіздікке қол жеткізуге мүмкіндік бере отырып, денсаулық пен сұлулық үшін премиум өнімдерді ұсынуға тырысамыз.",
     howItWorks: "Бұл қалай жұмыс істейді",
     joinUs: "Бізге қосылыңыз",
-    joinUsDesc: "Платформамызда тіркеліп, жеке шотыңызды жасаңыз. Бұл тегін және бірнеше минут уақыт алады.",
+    joinUsDesc:
+      "Платформамызда тіркеліп, жеке шотыңызды жасаңыз. Бұл тегін және бірнеше минут уақыт алады.",
     chooseTariff: "Тарифті таңдаңыз",
     chooseTariffDesc:
       "Мақсаттарыңыз бен бюджетіңізге сәйкес келетін тариф жоспарын таңдаңыз. Әр жоспар әртүрлі артықшылықтар мен табыс мүмкіндіктерін ұсынады.",
@@ -583,12 +613,14 @@ const translations: Record<Language, Record<string, string>> = {
     earnMoneyDesc:
       "Тарифіңізден күнделікті табыс алуды бастаңыз және рефералдар арқылы табысыңызды арттыру үшін желіңізді дамытыңыз.",
     readyToStart: "Бастауға дайынсыз ба?",
-    readyToStartDesc: "MLM платформамызбен қазірдің өзінде ақша табатын мыңдаған табысты серіктестерге қосылыңыз.",
+    readyToStartDesc:
+      "MLM платформамызбен қазірдің өзінде ақша табатын мыңдаған табысты серіктестерге қосылыңыз.",
     getStarted: "Бастау",
     viewTariffs: "Тарифтерді көру",
     products: "Өнімдер",
     about: "Біз туралы",
-    referralBonusInfo: "Рефералдарыңыз тіркелгенде және балансын толтырғанда бонус аласыз.",
+    referralBonusInfo:
+      "Рефералдарыңыз тіркелгенде және балансын толтырғанда бонус аласыз.",
     shareReferralLink: "Реферал сілтемесін бөлісу",
     copied: "Көшірілді!",
     referralLinkCopied: "Реферал сілтемесі көшірілді!",
@@ -622,6 +654,8 @@ const translations: Record<Language, Record<string, string>> = {
     addedToCartDesc: "себетке қосылды",
     addedToWishlist: "Таңдаулыларға қосылды",
     addedToWishlistDesc: "таңдаулыларға қосылды",
+    active_users: "Белсенді пайдаланушылар",
+    loading_users: "Пайдаланушылар жүктелуде...",
   },
   kg: {
     welcome: "Кош келиңиз",
@@ -689,7 +723,8 @@ const translations: Record<Language, Record<string, string>> = {
     tariffPrice: "Тариф баасы",
     information: "Маалымат",
     changePassword: "Сырсөздү өзгөртүү",
-    changePasswordDesc: "Эсебиңиздин коопсуздугун камсыздоо үчүн сырсөзүңүздү жаңыртыңыз",
+    changePasswordDesc:
+      "Эсебиңиздин коопсуздугун камсыздоо үчүн сырсөзүңүздү жаңыртыңыз",
     currentPassword: "Учурдагы сырсөз",
     newPassword: "Жаңы сырсөз",
     confirmPassword: "Сырсөздү ырастоо",
@@ -713,7 +748,8 @@ const translations: Record<Language, Record<string, string>> = {
     weekly: "Жумалык",
     monthly: "Айлык",
     aboutUs: "Биз жөнүндө",
-    aboutUsDesc: "MLM платформабыз жана анын иштөө тартиби жөнүндө көбүрөөк билүү",
+    aboutUsDesc:
+      "MLM платформабыз жана анын иштөө тартиби жөнүндө көбүрөөк билүү",
     ourMission: "Биздин миссиябыз",
     ourMissionDesc:
       "Биздин миссиябыз - бардыгына ачык жана кирешелүү MLM платформасын сунуштоо. Биз сапаттуу продукттар жана адилеттүү сыйлык планы аркылуу финансылык өсүү мүмкүнчүлүктөрүн түзүүгө ишенебиз.",
@@ -721,7 +757,8 @@ const translations: Record<Language, Record<string, string>> = {
       "Биз өнөктөштөрүбүзгө туруктуу бизнес курууга жана финансылык көз карандысыздыкка жетүүгө мүмкүнчүлүк берүү менен бирге, ден соолук жана сулуулук үчүн премиум продукттарды сунуштоого умтулабыз.",
     howItWorks: "Бул кандай иштейт",
     joinUs: "Бизге кошулуңуз",
-    joinUsDesc: "Платформабызда катталып, жеке эсебиңизди түзүңүз. Бул акысыз жана бир нече мүнөт убакыт алат.",
+    joinUsDesc:
+      "Платформабызда катталып, жеке эсебиңизди түзүңүз. Бул акысыз жана бир нече мүнөт убакыт алат.",
     chooseTariff: "Тарифти тандаңыз",
     chooseTariffDesc:
       "Максаттарыңызга жана бюджетиңизге ылайык келген тариф планын тандаңыз. Ар бир план ар кандай артыкчылыктарды жана киреше мүмкүнчүлүктөрүн сунуштайт.",
@@ -735,7 +772,8 @@ const translations: Record<Language, Record<string, string>> = {
     viewTariffs: "Тарифтерди көрүү",
     products: "Продукттар",
     about: "Биз жөнүндө",
-    referralBonusInfo: "Рефералдарыңыз катталганда жана балансын толтурганда бонус аласыз.",
+    referralBonusInfo:
+      "Рефералдарыңыз катталганда жана балансын толтурганда бонус аласыз.",
     shareReferralLink: "Реферал шилтемесин бөлүшүү",
     copied: "Көчүрүлдү!",
     referralLinkCopied: "Реферал шилтемеси көчүрүлдү!",
@@ -746,7 +784,8 @@ const translations: Record<Language, Record<string, string>> = {
     availableBalance: "Жеткиликтүү баланс",
     processing: "Иштетилүүдө...",
     withdrawalHistory: "Акча чыгаруу тарыхы",
-    withdrawalPendingApproval: "Акча чыгаруу сурооңуз администратордун бекитүүсүн күтүүдө.",
+    withdrawalPendingApproval:
+      "Акча чыгаруу сурооңуз администратордун бекитүүсүн күтүүдө.",
     addNewCard: "Жаңы карта кошуу",
     skincare: "Тери кароо",
     supplements: "Кошумчалар",
@@ -769,6 +808,8 @@ const translations: Record<Language, Record<string, string>> = {
     addedToCartDesc: "себетке кошулду",
     addedToWishlist: "Каалоолор тизмесине кошулду",
     addedToWishlistDesc: "каалоолор тизмесине кошулду",
+    active_users: "Активдүү колдонуучулар",
+    loading_users: "Колдонуучулар жүктөлүүдө...",
   },
   tj: {
     welcome: "Хуш омадед",
@@ -795,8 +836,10 @@ const translations: Record<Language, Record<string, string>> = {
     paymentStatus: "Ҳолати пардохт",
     purchase: "Харидан",
     pay: "Пардохт",
-    waitPayment: "Лутфан интизор шавед. Рақами корт дар давоми 2 дақиқа пешниҳод карда мешавад",
-    completePayment: "Пардохтро анҷом диҳед ва дар давоми 10 дақиқа расидро бор кунед",
+    waitPayment:
+      "Лутфан интизор шавед. Рақами корт дар давоми 2 дақиқа пешниҳод карда мешавад",
+    completePayment:
+      "Пардохтро анҷом диҳед ва дар давоми 10 дақиқа расидро бор кунед",
     uploadReceipt: "Бор кардани расид",
     cardNumber: "Рақами корт",
     requestWithdrawal: "Дархости гирифтани пул",
@@ -836,7 +879,8 @@ const translations: Record<Language, Record<string, string>> = {
     tariffPrice: "Нархи тариф",
     information: "Маълумот",
     changePassword: "Тағйири рамз",
-    changePasswordDesc: "Рамзи худро барои нигоҳ доштани амнияти ҳисоби худ нав кунед",
+    changePasswordDesc:
+      "Рамзи худро барои нигоҳ доштани амнияти ҳисоби худ нав кунед",
     currentPassword: "Рамзи ҷорӣ",
     newPassword: "Рамзи нав",
     confirmPassword: "Тасдиқи рамз",
@@ -860,7 +904,8 @@ const translations: Record<Language, Record<string, string>> = {
     weekly: "Ҳафтаина",
     monthly: "Моҳона",
     aboutUs: "Дар бораи мо",
-    aboutUsDesc: "Дар бораи платформаи MLM-и мо ва тарзи кори он маълумоти бештар гиред",
+    aboutUsDesc:
+      "Дар бораи платформаи MLM-и мо ва тарзи кори он маълумоти бештар гиред",
     ourMission: "Рисолати мо",
     ourMissionDesc:
       "Рисолати мо пешниҳоди платформаи шаффоф ва сердаромади MLM барои ҳама мебошад. Мо ба эҷоди имкониятҳо барои рушди молиявӣ тавассути маҳсулоти босифат ва нақшаи одилонаи подош бовар дорем.",
@@ -877,7 +922,8 @@ const translations: Record<Language, Record<string, string>> = {
     earnMoneyDesc:
       "Аз тарифи худ даромади ҳаррӯза гирифтанро оғоз кунед ва шабакаи худро барои зиёд кардани даромади худ тавассути рефералҳо рушд диҳед.",
     readyToStart: "Барои оғоз омодаед?",
-    readyToStartDesc: "Ба ҳазорҳо шарикони муваффақ, ки аллакай бо платформаи MLM-и мо пул кор мекунанд, ҳамроҳ шавед.",
+    readyToStartDesc:
+      "Ба ҳазорҳо шарикони муваффақ, ки аллакай бо платформаи MLM-и мо пул кор мекунанд, ҳамроҳ шавед.",
     getStarted: "Оғоз кунед",
     viewTariffs: "Дидани тарифҳо",
     products: "Маҳсулот",
@@ -888,13 +934,15 @@ const translations: Record<Language, Record<string, string>> = {
     copied: "Нусхабардорӣ шуд!",
     referralLinkCopied: "Пайванди реферал ба буфери мубодила нусхабардорӣ шуд!",
     joinMlmPlatform: "Ба платформаи MLM ҳамроҳ шавед",
-    joinMeOnMlm: "Ба ман дар платформаи MLM ҳамроҳ шавед ва пул кор карданро оғоз кунед!",
+    joinMeOnMlm:
+      "Ба ман дар платформаи MLM ҳамроҳ шавед ва пул кор карданро оғоз кунед!",
     selectCard: "Кортро интихоб кунед",
     amount: "Маблағ",
     availableBalance: "Тавозуни дастрас",
     processing: "Коркард...",
     withdrawalHistory: "Таърихи гирифтани пул",
-    withdrawalPendingApproval: "Дархости гирифтани пули шумо дар интизори тасдиқи маъмур аст.",
+    withdrawalPendingApproval:
+      "Дархости гирифтани пули шумо дар интизори тасдиқи маъмур аст.",
     addNewCard: "Илова кардани корти нав",
     skincare: "Нигоҳубини пӯст",
     supplements: "Иловаҳо",
@@ -911,12 +959,15 @@ const translations: Record<Language, Record<string, string>> = {
     viewDetails: "Дидани тафсилот",
     home: "Асосӣ",
     productNotFound: "Маҳсулот ёфт нашуд",
-    productNotFoundDesc: "Маҳсулоте, ки шумо ҷустуҷӯ мекунед, вуҷуд надорад ё хориҷ карда шудааст.",
+    productNotFoundDesc:
+      "Маҳсулоте, ки шумо ҷустуҷӯ мекунед, вуҷуд надорад ё хориҷ карда шудааст.",
     backToProducts: "Бозгашт ба маҳсулот",
     addedToCart: "Ба сабад илова карда шуд",
     addedToCartDesc: "ба сабади шумо илова карда шуд",
     addedToWishlist: "Ба рӯйхати дӯстдошта илова карда шуд",
     addedToWishlistDesc: "ба рӯйхати дӯстдоштаи шумо илова карда шуд",
+    active_users: "Истифодабарандагони фаъол",
+    loading_users: "Истифодабарандагон боргузорӣ мешаванд...",
   },
   cn: {
     welcome: "欢迎",
@@ -1012,14 +1063,18 @@ const translations: Record<Language, Record<string, string>> = {
     ourMission: "我们的使命",
     ourMissionDesc:
       "我们的使命是为每个人提供透明且有利可图的MLM平台。我们相信通过优质产品和公平的补偿计划创造财务增长机会。",
-    ourMissionDesc2: "我们致力于提供优质的健康和美容产品，同时使我们的合作伙伴能够建立可持续的业务并实现财务独立。",
+    ourMissionDesc2:
+      "我们致力于提供优质的健康和美容产品，同时使我们的合作伙伴能够建立可持续的业务并实现财务独立。",
     howItWorks: "工作原理",
     joinUs: "加入我们",
-    joinUsDesc: "在我们的平台上注册并创建您的个人账户。这是免费的，只需几分钟。",
+    joinUsDesc:
+      "在我们的平台上注册并创建您的个人账户。这是免费的，只需几分钟。",
     chooseTariff: "选择资费",
-    chooseTariffDesc: "选择适合您目标和预算的资费计划。每个计划提供不同的福利和收益潜力。",
+    chooseTariffDesc:
+      "选择适合您目标和预算的资费计划。每个计划提供不同的福利和收益潜力。",
     earnMoney: "赚钱",
-    earnMoneyDesc: "开始从您的资费中获得每日收入，并建立您的网络以通过推荐增加您的收入。",
+    earnMoneyDesc:
+      "开始从您的资费中获得每日收入，并建立您的网络以通过推荐增加您的收入。",
     readyToStart: "准备开始？",
     readyToStartDesc: "加入已经在我们的MLM平台上赚钱的数千名成功合作伙伴。",
     getStarted: "开始",
@@ -1060,35 +1115,48 @@ const translations: Record<Language, Record<string, string>> = {
     addedToCartDesc: "已添加到您的购物车",
     addedToWishlist: "已添加到愿望清单",
     addedToWishlistDesc: "已添加到您的愿望清单",
+    active_users: "活跃用户",
+    loading_users: "加载用户中...",
   },
-}
+};
 
-const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
+const LanguageContext = createContext<LanguageContextType | undefined>(
+  undefined
+);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguageState] = useLocalStorage<Language>("language", "ru")
-  const [currency, setCurrency] = useState<Currency>(languageCurrencyMap[language])
+  const [language, setLanguageState] = useLocalStorage<Language>(
+    "language",
+    "ru"
+  );
+  const [currency, setCurrency] = useState<Currency>(
+    languageCurrencyMap[language]
+  );
 
   useEffect(() => {
-    setCurrency(languageCurrencyMap[language])
-  }, [language])
+    setCurrency(languageCurrencyMap[language]);
+  }, [language]);
 
   const setLanguage = (lang: Language) => {
-    setLanguageState(lang)
-    setCurrency(languageCurrencyMap[lang])
-  }
+    setLanguageState(lang);
+    setCurrency(languageCurrencyMap[lang]);
+  };
 
   const t = (key: string) => {
-    return translations[language][key] || key
-  }
+    return translations[language][key] || key;
+  };
 
-  return <LanguageContext.Provider value={{ language, setLanguage, currency, t }}>{children}</LanguageContext.Provider>
+  return (
+    <LanguageContext.Provider value={{ language, setLanguage, currency, t }}>
+      {children}
+    </LanguageContext.Provider>
+  );
 }
 
 export function useLanguage() {
-  const context = useContext(LanguageContext)
+  const context = useContext(LanguageContext);
   if (context === undefined) {
-    throw new Error("useLanguage must be used within a LanguageProvider")
+    throw new Error("useLanguage must be used within a LanguageProvider");
   }
-  return context
+  return context;
 }

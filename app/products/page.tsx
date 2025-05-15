@@ -22,7 +22,7 @@ const mockProducts = [
   {
     id: 1,
     name: "Rejuvenating Face Cream",
-    price: 45,
+    price: 45 * 12000, // 540,000 UZS
     rating: 4.8,
     reviews: 124,
     image: "https://picsum.photos/id/21/400/400",
@@ -32,7 +32,7 @@ const mockProducts = [
   {
     id: 2,
     name: "Vitamin C Serum",
-    price: 35,
+    price: 35 * 12000, // 420,000 UZS
     rating: 4.7,
     reviews: 98,
     image: "https://picsum.photos/id/22/400/400",
@@ -42,7 +42,7 @@ const mockProducts = [
   {
     id: 3,
     name: "Collagen Supplement",
-    price: 29,
+    price: 29 * 12000, // 348,000 UZS
     rating: 4.5,
     reviews: 76,
     image: "https://picsum.photos/id/23/400/400",
@@ -52,7 +52,7 @@ const mockProducts = [
   {
     id: 4,
     name: "Hydrating Mask",
-    price: 25,
+    price: 25 * 12000, // 300,000 UZS
     rating: 4.6,
     reviews: 62,
     image: "https://picsum.photos/id/24/400/400",
@@ -62,7 +62,7 @@ const mockProducts = [
   {
     id: 5,
     name: "Detox Tea",
-    price: 18,
+    price: 18 * 12000, // 216,000 UZS
     rating: 4.4,
     reviews: 53,
     image: "https://picsum.photos/id/25/400/400",
@@ -72,7 +72,7 @@ const mockProducts = [
   {
     id: 6,
     name: "Protein Shake",
-    price: 32,
+    price: 32 * 12000, // 384,000 UZS
     rating: 4.3,
     reviews: 47,
     image: "https://picsum.photos/id/26/400/400",
@@ -137,7 +137,7 @@ export default function ProductsPage() {
           {filteredProducts.map((product) => (
             <Card
               key={product.id}
-              className="hover:cursor-pointer hover:scale-105 transition-transform hover:shadow-lg"
+              className="hover:cursor-pointer flex flex-col justify-between hover:scale-105 transition-transform hover:shadow-lg"
               data-aos="fade-up"
               onClick={() => push(`/products/${product.id}`)}
             >

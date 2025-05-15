@@ -17,6 +17,8 @@ const handler = NextAuth({
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     async signIn({ user, account, profile, email, credentials }) {
+      console.log(user, account, profile, email, credentials, "20qator");
+
       console.log("User signed in:", user);
       return true;
     },
