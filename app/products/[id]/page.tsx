@@ -1,19 +1,34 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useParams } from "next/navigation"
-import Image from "next/image"
-import Link from "next/link"
-import { ShoppingCart, Star, ChevronRight, Heart } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useToast } from "@/components/ui/use-toast"
-import { useLanguage } from "@/components/language-provider"
-import { formatCurrency } from "@/lib/utils"
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
+import { ShoppingCart, Star, ChevronRight, Heart } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/components/ui/use-toast";
+import { useLanguage } from "@/components/language-provider";
+import { formatCurrency } from "@/lib/utils";
 
-// Mock product data
-const mockProducts = {
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  rating: number;
+  reviews: number;
+  description: string;
+  longDescription: string;
+  features: string[];
+  ingredients: string;
+  usage: string;
+  images: string[];
+  category: string;
+  relatedProducts: string[];
+}
+
+const mockProducts: Record<string, Product> = {
   "1": {
     id: "1",
     name: "Rejuvenating Face Cream",
@@ -81,7 +96,8 @@ const mockProducts = {
     price: 29,
     rating: 4.5,
     reviews: 76,
-    description: "Support skin elasticity and joint health with our premium collagen peptides supplement.",
+    description:
+      "Support skin elasticity and joint health with our premium collagen peptides supplement.",
     longDescription:
       "Our Collagen Supplement contains high-quality collagen peptides that are easily absorbed by the body to support skin elasticity, joint health, and hair strength. As we age, our natural collagen production decreases, leading to visible signs of aging. This supplement helps replenish your body's collagen levels, resulting in firmer skin, reduced joint pain, and stronger hair and nails. The unflavored formula dissolves easily in hot or cold beverages without affecting the taste.",
     features: [
@@ -109,7 +125,8 @@ const mockProducts = {
     price: 25,
     rating: 4.6,
     reviews: 62,
-    description: "Deep hydration for dry and sensitive skin with our intensive overnight mask.",
+    description:
+      "Deep hydration for dry and sensitive skin with our intensive overnight mask.",
     longDescription:
       "Our Hydrating Mask is an intensive treatment designed to provide deep hydration for dry and sensitive skin. The gel-cream formula creates a moisture-locking barrier that allows the active ingredients to penetrate deeply while you sleep. Enriched with hyaluronic acid, ceramides, and soothing botanical extracts, this mask replenishes moisture levels, strengthens the skin barrier, and reduces redness and irritation. Wake up to plump, soft, and revitalized skin.",
     features: [
@@ -138,7 +155,8 @@ const mockProducts = {
     price: 18,
     rating: 4.4,
     reviews: 53,
-    description: "Natural cleansing blend of herbs to support your body's detoxification process.",
+    description:
+      "Natural cleansing blend of herbs to support your body's detoxification process.",
     longDescription:
       "Our Detox Tea is a carefully crafted blend of organic herbs designed to support your body's natural detoxification processes. The combination of dandelion root, burdock root, and milk thistle helps cleanse the liver, while ginger and peppermint aid digestion and reduce bloating. Green tea provides a gentle energy boost and additional antioxidants. This refreshing tea has a pleasant taste with subtle notes of mint and citrus, making it easy to incorporate into your daily wellness routine.",
     features: [
@@ -167,7 +185,8 @@ const mockProducts = {
     price: 32,
     rating: 4.3,
     reviews: 47,
-    description: "Plant-based protein for muscle recovery and overall nutrition with 20g of protein per serving.",
+    description:
+      "Plant-based protein for muscle recovery and overall nutrition with 20g of protein per serving.",
     longDescription:
       "Our Plant-Based Protein Shake provides 20g of complete protein per serving to support muscle recovery and overall nutrition. The unique blend of pea, rice, and hemp proteins delivers all essential amino acids in an easily digestible form. Enhanced with a comprehensive vitamin and mineral blend, digestive enzymes, and probiotics, this shake supports not just muscle health but overall wellbeing. The smooth, creamy texture and delicious vanilla flavor make it a satisfying addition to your daily routine.",
     features: [
@@ -190,57 +209,59 @@ const mockProducts = {
     category: "supplements",
     relatedProducts: ["3", "5", "2"],
   },
-}
+};
 
 export default function ProductDetailPage() {
-  const { t, currency } = useLanguage()
-  const { toast } = useToast()
-  const params = useParams()
-  const productId = params.id as string
+  const { t, currency } = useLanguage();
+  const { toast } = useToast();
+  const params = useParams();
+  const productId = params.id as string;
 
-  const [product, setProduct] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const [activeImageIndex, setActiveImageIndex] = useState(0)
-  const [quantity, setQuantity] = useState(1)
-  const [relatedProducts, setRelatedProducts] = useState<any[]>([])
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [quantity, setQuantity] = useState(1);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
 
   useEffect(() => {
     // Simulate API fetch
-    setLoading(true)
+    setLoading(true);
 
     setTimeout(() => {
       if (productId && mockProducts[productId]) {
-        setProduct(mockProducts[productId])
+        setProduct(mockProducts[productId]);
 
         // Get related products
-        const related = mockProducts[productId].relatedProducts.map((id) => mockProducts[id]).filter(Boolean)
+        const related = mockProducts[productId].relatedProducts
+          .map((id) => mockProducts[id])
+          .filter(Boolean);
 
-        setRelatedProducts(related)
+        setRelatedProducts(related);
       }
-      setLoading(false)
-    }, 500)
-  }, [productId])
+      setLoading(false);
+    }, 500);
+  }, [productId]);
 
   const handleAddToCart = () => {
     toast({
       title: t("addedToCart"),
-      description: `${product.name} (${quantity}) ${t("addedToCartDesc")}`,
-    })
-  }
+      description: `${product?.name} (${quantity}) ${t("addedToCartDesc")}`,
+    });
+  };
 
   const handleAddToWishlist = () => {
     toast({
       title: t("addedToWishlist"),
-      description: `${product.name} ${t("addedToWishlistDesc")}`,
-    })
-  }
+      description: `${product?.name} ${t("addedToWishlistDesc")}`,
+    });
+  };
 
   if (loading) {
     return (
       <div className="container mx-auto p-4 md:p-8 flex justify-center items-center min-h-[60vh]">
         <div className="animate-spin h-12 w-12 border-4 border-primary border-t-transparent rounded-full"></div>
       </div>
-    )
+    );
   }
 
   if (!product) {
@@ -252,7 +273,7 @@ export default function ProductDetailPage() {
           <Link href="/products">{t("backToProducts")}</Link>
         </Button>
       </div>
-    )
+    );
   }
 
   return (
@@ -286,7 +307,9 @@ export default function ProductDetailPage() {
               <div
                 key={index}
                 className={`relative aspect-square rounded-md overflow-hidden cursor-pointer border-2 ${
-                  activeImageIndex === index ? "border-primary" : "border-transparent"
+                  activeImageIndex === index
+                    ? "border-primary"
+                    : "border-transparent"
                 }`}
                 onClick={() => setActiveImageIndex(index)}
               >
@@ -316,12 +339,16 @@ export default function ProductDetailPage() {
             </span>
           </div>
 
-          <p className="text-3xl font-bold mb-6">{formatCurrency(product.price, currency)}</p>
+          <p className="text-3xl font-bold mb-6">
+            {formatCurrency(product.price, currency)}
+          </p>
 
           <p className="mb-6 text-muted-foreground">{product.description}</p>
 
           <div className="mb-6">
-            <label className="block text-sm font-medium mb-2">{t("quantity")}</label>
+            <label className="block text-sm font-medium mb-2">
+              {t("quantity")}
+            </label>
             <div className="flex items-center">
               <Button
                 variant="outline"
@@ -331,8 +358,14 @@ export default function ProductDetailPage() {
               >
                 -
               </Button>
-              <span className="mx-4 font-medium w-8 text-center">{quantity}</span>
-              <Button variant="outline" size="icon" onClick={() => setQuantity(quantity + 1)}>
+              <span className="mx-4 font-medium w-8 text-center">
+                {quantity}
+              </span>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setQuantity(quantity + 1)}
+              >
                 +
               </Button>
             </div>
@@ -353,7 +386,9 @@ export default function ProductDetailPage() {
             <CardContent className="p-4">
               <Tabs defaultValue="description">
                 <TabsList className="grid grid-cols-3 mb-4">
-                  <TabsTrigger value="description">{t("description")}</TabsTrigger>
+                  <TabsTrigger value="description">
+                    {t("description")}
+                  </TabsTrigger>
                   <TabsTrigger value="features">{t("features")}</TabsTrigger>
                   <TabsTrigger value="usage">{t("usage")}</TabsTrigger>
                 </TabsList>
@@ -371,7 +406,9 @@ export default function ProductDetailPage() {
                   <p>{product.usage}</p>
                   <div className="mt-4">
                     <h4 className="font-medium mb-2">{t("ingredients")}</h4>
-                    <p className="text-sm text-muted-foreground">{product.ingredients}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {product.ingredients}
+                    </p>
                   </div>
                 </TabsContent>
               </Tabs>
@@ -385,7 +422,11 @@ export default function ProductDetailPage() {
           <h2 className="text-2xl font-bold mb-6">{t("relatedProducts")}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {relatedProducts.map((relatedProduct) => (
-              <Card key={relatedProduct.id} className="overflow-hidden" data-aos="fade-up">
+              <Card
+                key={relatedProduct.id}
+                className="overflow-hidden"
+                data-aos="fade-up"
+              >
                 <div className="relative h-64">
                   <Image
                     src={relatedProduct.images[0] || "/placeholder.svg"}
@@ -395,16 +436,24 @@ export default function ProductDetailPage() {
                   />
                 </div>
                 <CardContent className="p-4">
-                  <h3 className="font-semibold text-lg mb-2">{relatedProduct.name}</h3>
+                  <h3 className="font-semibold text-lg mb-2">
+                    {relatedProduct.name}
+                  </h3>
                   <div className="flex justify-between items-center">
-                    <p className="font-bold text-primary">{formatCurrency(relatedProduct.price, currency)}</p>
+                    <p className="font-bold text-primary">
+                      {formatCurrency(relatedProduct.price, currency)}
+                    </p>
                     <div className="flex items-center">
                       <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                      <span className="ml-1 text-sm">{relatedProduct.rating}</span>
+                      <span className="ml-1 text-sm">
+                        {relatedProduct.rating}
+                      </span>
                     </div>
                   </div>
                   <Button asChild className="w-full mt-4">
-                    <Link href={`/products/${relatedProduct.id}`}>{t("viewDetails")}</Link>
+                    <Link href={`/products/${relatedProduct.id}`}>
+                      {t("viewDetails")}
+                    </Link>
                   </Button>
                 </CardContent>
               </Card>
@@ -413,5 +462,5 @@ export default function ProductDetailPage() {
         </div>
       )}
     </div>
-  )
+  );
 }

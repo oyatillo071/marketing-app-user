@@ -1,0 +1,20 @@
+export const API_CONFIG = {
+  // Set to true to use mock data from data.json
+  // Set to false to use real API endpoints
+  useMockData: true,
+
+  // Base URL for API requests when useMockData is false
+  baseUrl: "https://api.mlm-platform.com/v1",
+
+  // WebSocket URL for real-time updates
+  wsUrl: "wss://api.mlm-platform.com/ws",
+
+  // Timeout in milliseconds
+  timeout: 1000,
+
+  // Payment processing timeouts (in milliseconds)
+  paymentTimeouts: {
+    adminCardSelection: 2 * 60 * 1000, // 2 minutes
+    userPaymentUpload: 10 * 60 * 1000, // 10 minutes
+  },
+};

@@ -1,13 +1,21 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Image from "next/image"
-import { ShoppingCart, Star } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { useLanguage } from "@/components/language-provider"
-import { formatCurrency } from "@/lib/utils"
+import { useState } from "react";
+import Image from "next/image";
+import { ShoppingCart, Star } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { useLanguage } from "@/components/language-provider";
+import { formatCurrency } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 // Mock product data
 const mockProducts = [
@@ -71,23 +79,25 @@ const mockProducts = [
     description: "Plant-based protein for muscle recovery",
     category: "supplements",
   },
-]
+];
 
-const categories = ["all", "skincare", "supplements", "wellness"]
+const categories = ["all", "skincare", "supplements", "wellness"];
 
 export default function ProductsPage() {
-  const { currency } = useLanguage()
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("all")
+  const { currency } = useLanguage();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
 
   const filteredProducts = mockProducts.filter((product) => {
     const matchesSearch =
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCategory = selectedCategory === "all" || product.category === selectedCategory
+      product.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory =
+      selectedCategory === "all" || product.category === selectedCategory;
 
-    return matchesSearch && matchesCategory
-  })
+    return matchesSearch && matchesCategory;
+  });
+  const { push } = useRouter();
 
   return (
     <div className="container mx-auto p-4 md:p-8">
@@ -125,8 +135,13 @@ export default function ProductsPage() {
       {filteredProducts.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProducts.map((product) => (
-            <Card key={product.id} data-aos="fade-up">
-              <div className="relative h-64 overflow-hidden">
+            <Card
+              key={product.id}
+              className="hover:cursor-pointer hover:scale-105 transition-transform hover:shadow-lg"
+              data-aos="fade-up"
+              onClick={() => push(`/products/${product.id}`)}
+            >
+              <div className="relative h-64 overflow-hidden ">
                 <Image
                   src={product.image || "/placeholder.svg"}
                   alt={product.name}
@@ -140,11 +155,15 @@ export default function ProductsPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex justify-between items-center">
-                  <div className="text-2xl font-bold text-primary">{formatCurrency(product.price, currency)}</div>
+                  <div className="text-2xl font-bold text-primary">
+                    {formatCurrency(product.price, currency)}
+                  </div>
                   <div className="flex items-center">
                     <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
                     <span className="font-medium">{product.rating}</span>
-                    <span className="text-muted-foreground text-sm ml-1">({product.reviews})</span>
+                    <span className="text-muted-foreground text-sm ml-1">
+                      ({product.reviews})
+                    </span>
                   </div>
                 </div>
               </CardContent>
@@ -159,9 +178,11 @@ export default function ProductsPage() {
         </div>
       ) : (
         <div className="text-center py-12" data-aos="fade-up">
-          <p className="text-lg text-muted-foreground">No products found matching your criteria.</p>
+          <p className="text-lg text-muted-foreground">
+            No products found matching your criteria.
+          </p>
         </div>
       )}
     </div>
-  )
+  );
 }

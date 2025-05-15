@@ -1,11 +1,17 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { Facebook, Instagram, TextIcon as Telegram, Twitter, PhoneIcon as WhatsApp } from "lucide-react"
-import { useLanguage } from "@/components/language-provider"
+import Link from "next/link";
+import {
+  Facebook,
+  Instagram,
+  TextIcon as Telegram,
+  Twitter,
+  PhoneIcon as WhatsApp,
+} from "lucide-react";
+import { useLanguage } from "@/components/language-provider";
 
 export default function Footer() {
-  const { t } = useLanguage()
+  const { t } = useLanguage();
 
   return (
     <footer className="bg-background border-t border-border">
@@ -20,16 +26,28 @@ export default function Footer() {
           <div>
             <h3 className="text-lg font-semibold mb-4">{t("support")}</h3>
             <div className="flex flex-col space-y-2">
-              <Link href="#" className="text-sm text-muted-foreground hover:text-foreground">
+              <Link
+                href="/faq"
+                className="text-sm text-muted-foreground hover:text-foreground"
+              >
                 FAQ
               </Link>
-              <Link href="#" className="text-sm text-muted-foreground hover:text-foreground">
+              <Link
+                href="#"
+                className="text-sm text-muted-foreground hover:text-foreground"
+              >
                 {t("support")}
               </Link>
-              <Link href="#" className="text-sm text-muted-foreground hover:text-foreground">
+              <Link
+                href="#"
+                className="text-sm text-muted-foreground hover:text-foreground"
+              >
                 Terms & Conditions
               </Link>
-              <Link href="#" className="text-sm text-muted-foreground hover:text-foreground">
+              <Link
+                href="#"
+                className="text-sm text-muted-foreground hover:text-foreground"
+              >
                 Privacy Policy
               </Link>
             </div>
@@ -37,10 +55,18 @@ export default function Footer() {
           <div>
             <h3 className="text-lg font-semibold mb-4">{t("support")}</h3>
             <div className="flex space-x-4">
-              <Link href="https://t.me/support" target="_blank" rel="noopener noreferrer">
+              <Link
+                href="https://t.me/support"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <Telegram className="h-5 w-5 text-secondary hover:text-primary transition-colors" />
               </Link>
-              <Link href="https://wa.me/1234567890" target="_blank" rel="noopener noreferrer">
+              <Link
+                href="https://wa.me/1234567890"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <WhatsApp className="h-5 w-5 text-secondary hover:text-primary transition-colors" />
               </Link>
               <Link href="#" target="_blank" rel="noopener noreferrer">
@@ -62,5 +88,5 @@ export default function Footer() {
         </div>
       </div>
     </footer>
-  )
+  );
 }
