@@ -32,7 +32,7 @@ const mockProducts: Record<string, Product> = {
   "1": {
     id: "1",
     name: "Rejuvenating Face Cream",
-    price: 45,
+    price: 450000,
     rating: 4.8,
     reviews: 124,
     description:
@@ -63,7 +63,7 @@ const mockProducts: Record<string, Product> = {
   "2": {
     id: "2",
     name: "Vitamin C Serum",
-    price: 35,
+    price: 350000,
     rating: 4.7,
     reviews: 98,
     description:
@@ -93,7 +93,7 @@ const mockProducts: Record<string, Product> = {
   "3": {
     id: "3",
     name: "Collagen Supplement",
-    price: 29,
+    price: 290000,
     rating: 4.5,
     reviews: 76,
     description:
@@ -122,7 +122,7 @@ const mockProducts: Record<string, Product> = {
   "4": {
     id: "4",
     name: "Hydrating Mask",
-    price: 25,
+    price: 250000,
     rating: 4.6,
     reviews: 62,
     description:
@@ -152,7 +152,7 @@ const mockProducts: Record<string, Product> = {
   "5": {
     id: "5",
     name: "Detox Tea",
-    price: 18,
+    price: 180000,
     rating: 4.4,
     reviews: 53,
     description:
@@ -182,7 +182,7 @@ const mockProducts: Record<string, Product> = {
   "6": {
     id: "6",
     name: "Protein Shake",
-    price: 32,
+    price: 320000,
     rating: 4.3,
     reviews: 47,
     description:

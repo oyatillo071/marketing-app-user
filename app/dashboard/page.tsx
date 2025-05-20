@@ -1,4 +1,3 @@
-
 "use client";
 
 import type React from "react";
@@ -47,6 +46,8 @@ import { AvatarUpload } from "@/components/profile/avatar-upload";
 import { EarningsChart } from "@/components/earnings-chart";
 import { ReferralShare } from "@/components/referral-share";
 import { formatCurrency } from "@/lib/utils";
+import { useRouter } from "next/navigation";
+import { Toaster, toast } from "sonner";
 
 // Mock data
 const mockUserData = {
@@ -96,7 +97,7 @@ const mockUserData = {
       duration: 60,
       dailyProfit: 20,
       description:
-        "O‘rta darajadagi foydalanuvchilar uchun mos tarif. Bu tarif o‘rtacha sarmoya bilan barqaror daromad olish imkonini beradi.",
+        "O‘rta darajadagi foydalanuchilar uchun mos tarif. Bu tarif o‘rtacha sarmoya bilan barqaror daromad olish imkonini beradi.",
       features: [
         "O‘rtacha sarmoya",
         "60 kunlik daromad",
@@ -149,7 +150,28 @@ const mockUserData = {
 
 export default function ProfilePage() {
   const { t, currency } = useLanguage();
-  const { toast } = useToast();
+  // const { toast } = useToast();
+  const router = useRouter();
+
+  // LocalStorage tekshirish va redirect
+  useEffect(() => {
+    function checkUser() {
+      const user = localStorage.getItem("mlm_user");
+      if (!user) {
+        router.push("/");
+      }
+    }
+
+    checkUser();
+
+    // Boshqa tablarda login/logout bo‘lsa ham tekshir
+    window.addEventListener("storage", checkUser);
+
+    return () => {
+      window.removeEventListener("storage", checkUser);
+    };
+  }, [router]);
+
   const [name, setName] = useState(mockUserData.name);
   const [email, setEmail] = useState(mockUserData.email);
   const [phone, setPhone] = useState(mockUserData.phone);
@@ -172,12 +194,15 @@ export default function ProfilePage() {
     email: true,
     push: false,
   });
+  const [isEditingSettings, setIsEditingSettings] = useState(false);
+  const [settingsEmail, setSettingsEmail] = useState(mockUserData.email);
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   const handleSaveProfile = () => {
-    toast({
-      title: "Profile Updated",
-      description: "Your profile information has been updated",
-    });
+    toast("Your profile information has been updated");
     setIsEditing(false);
   };
 
@@ -224,18 +249,11 @@ export default function ProfilePage() {
 
   const handleUpload = () => {
     if (!uploadedFile) {
-      toast({
-        title: "Xato",
-        description: "Iltimos, fayl tanlang",
-        variant: "destructive",
-      });
+      toast("Iltimos, fayl tanlang");
       return;
     }
 
-    toast({
-      title: "Muvaffaqiyat",
-      description: "To‘lov cheki muvaffaqiyatli yuklandi",
-    });
+    toast("To‘lov cheki muvaffaqiyatli yuklandi");
 
     setUploadedFile(null);
     setShowUploadTimer(false);
@@ -256,17 +274,24 @@ export default function ProfilePage() {
   };
 
   const handleProfileUpdate = () => {
-    toast({
-      title: "Muvaffaqiyat",
-      description: "Profil ma’lumotlari yangilandi",
-    });
+    toast("Profil ma’lumotlari yangilandi");
   };
 
   const handlePasswordChange = () => {
-    toast({
-      title: "Muvaffaqiyat",
-      description: "Parol muvaffaqiyatli o‘zgartirildi",
-    });
+    toast("Parol muvaffaqiyatli o‘zgartirildi");
+  };
+
+  const handleChangePassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsChangingPassword(true);
+
+    setTimeout(() => {
+      setIsChangingPassword(false);
+      toast("Sizning parolingiz muvaffaqiyatli o‘zgartirildi");
+      setOldPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    }, 1500);
   };
 
   return (
@@ -283,7 +308,7 @@ export default function ProfilePage() {
             onValueChange={setActiveTab}
             className="space-y-6"
           >
-            <TabsList className="grid grid-cols-2 md:grid-cols-6 gap-2 md:h-24 h-48 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+            <TabsList className="grid grid-cols-2 md:grid-cols-6 gap-2 md:h-12 h-48 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
               <TabsTrigger
                 value="profile"
                 data-aos="fade-up"
@@ -312,20 +337,7 @@ export default function ProfilePage() {
               >
                 {t("withdrawal")}
               </TabsTrigger>
-              <TabsTrigger
-                value="tariffs"
-                data-aos="fade-up"
-                data-aos-delay="500"
-              >
-                {t("tariffs")}
-              </TabsTrigger>
-              <TabsTrigger
-                value="statistics"
-                data-aos="fade-up"
-                data-aos-delay="600"
-              >
-                Statistika
-              </TabsTrigger>
+              {/* Statistika bo‘limi olib tashlandi */}
               <TabsTrigger
                 value="settings"
                 data-aos="fade-up"
@@ -346,9 +358,9 @@ export default function ProfilePage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div className="md:col-span-1">
                   <div className="space-y-8">
-                    <div data-aos="fade-up">
+                    {/* <div data-aos="fade-up">
                       <AvatarUpload initialAvatar={mockUserData.avatar} />
-                    </div>
+                    </div> */}
                     <Card
                       data-aos="fade-up"
                       data-aos-delay="100"
@@ -416,20 +428,6 @@ export default function ProfilePage() {
                               className="border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
                             />
                           </div>
-                          <div className="space-y-2">
-                            <Label
-                              htmlFor="phone"
-                              className="text-black dark:text-white"
-                            >
-                              {t("phone")}
-                            </Label>
-                            <Input
-                              id="phone"
-                              value={phone}
-                              onChange={(e) => setPhone(e.target.value)}
-                              className="border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                            />
-                          </div>
                         </div>
                       ) : (
                         <div className="space-y-4">
@@ -455,17 +453,7 @@ export default function ProfilePage() {
                               </p>
                             </div>
                           </div>
-                          <div className="flex items-center gap-3">
-                            <Phone className="h-5 w-5 text-muted-foreground" />
-                            <div>
-                              <p className="text-sm text-gray-600 dark:text-gray-300">
-                                {t("phone")}
-                              </p>
-                              <p className="font-medium text-black dark:text-white">
-                                {phone}
-                              </p>
-                            </div>
-                          </div>
+                          {/* Telefon raqam olib tashlandi */}
                         </div>
                       )}
                     </CardContent>
@@ -488,7 +476,7 @@ export default function ProfilePage() {
                         </div>
                       ) : (
                         <Button
-                          variant="outline"
+                          variant="destructive"
                           onClick={() => setIsEditing(true)}
                           className="w-full bg-accent-teal/10 text-accent-teal hover:bg-accent-teal/20 shadow-lg border-none"
                         >
@@ -624,277 +612,6 @@ export default function ProfilePage() {
               <WithdrawalTab />
             </TabsContent>
 
-            <TabsContent value="tariffs" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {mockUserData.tariffs.map((tariff) => (
-                  <Card
-                    key={tariff.id}
-                    data-aos="fade-up"
-                    className="bg-white dark:bg-[#111827] shadow-lg hover:shadow-xl transition-all duration-300"
-                  >
-                    <CardHeader>
-                      <CardTitle className="text-black dark:text-white">
-                        {t(tariff.name)}
-                      </CardTitle>
-                      <CardDescription className="text-gray-600 dark:text-gray-300">
-                        {tariff.description}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="relative h-48 overflow-hidden rounded-md">
-                        <Image
-                          src={
-                            tariff.images[currentImageIndex[tariff.id] || 0] ||
-                            "/placeholder.svg"
-                          }
-                          alt={`${tariff.name} image`}
-                          fill
-                          className="object-cover transition-opacity duration-500"
-                        />
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="absolute top-1/2 left-2 transform -translate-y-1/2 bg-white/80 dark:bg-gray-800/80"
-                          onClick={() =>
-                            handleCarouselChange(tariff.id, "prev")
-                          }
-                        >
-                          {"<"}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="absolute top-1/2 right-2 transform -translate-y-1/2 bg-white/80 dark:bg-gray-800/80"
-                          onClick={() =>
-                            handleCarouselChange(tariff.id, "next")
-                          }
-                        >
-                          {">"}
-                        </Button>
-                      </div>
-
-                      <div className="space-y-3">
-                        <div className="space-y-1">
-                          <p className="text-sm text-gray-600 dark:text-gray-300">
-                            {t("productPrice")}:
-                          </p>
-                          <p className="font-medium text-black dark:text-white">
-                            {formatCurrency(tariff.price, currency)}
-                          </p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-sm text-gray-600 dark:text-gray-300">
-                            {t("dailyIncome")}:
-                          </p>
-                          <p className="font-medium text-[#00FF99]">
-                            {formatCurrency(tariff.dailyProfit, currency)}
-                          </p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-sm text-gray-600 dark:text-gray-300">
-                            {t("incomeDuration")}:
-                          </p>
-                          <p className="font-medium text-black dark:text-white">
-                            {tariff.duration} {t("days")}
-                          </p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-sm text-gray-600 dark:text-gray-300">
-                            {t("totalIncome")}:
-                          </p>
-                          <p className="font-medium text-[#00FF99]">
-                            {formatCurrency(
-                              tariff.dailyProfit * tariff.duration,
-                              currency
-                            )}
-                          </p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-sm text-gray-600 dark:text-gray-300">
-                            {t("tariffPrice")}:
-                          </p>
-                          <p className="font-medium text-black dark:text-white">
-                            {formatCurrency(tariff.price, currency)}
-                          </p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-sm text-gray-600 dark:text-gray-300">
-                            Xususiyatlar:
-                          </p>
-                          <ul className="list-disc list-inside text-sm text-black dark:text-white">
-                            {tariff.features.map((feature, index) => (
-                              <li key={index}>{feature}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
-                    </CardContent>
-                    <CardFooter>
-                      <Button
-                        className="w-full bg-[#00FF99] text-white hover:bg-[#00FF99]/90"
-                        onClick={() => handlePayClick(tariff)}
-                        data-aos="zoom-in"
-                      >
-                        {t("pay")}
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
-
-              {selectedTariff && (
-                <Card
-                  className="mt-8 bg-white dark:bg-[#111827] shadow-lg"
-                  data-aos="fade-up"
-                >
-                  <CardHeader>
-                    <CardTitle className="text-black dark:text-white">
-                      {t(selectedTariff.name)} - {t("payment")}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    {showPaymentTimer && (
-                      <div className="flex items-center gap-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-md">
-                        <Clock className="h-8 w-8 text-[#00FF99] animate-pulse" />
-                        <p className="text-black dark:text-white">
-                          {t("waitPayment")}
-                        </p>
-                      </div>
-                    )}
-
-                    {showCardNumber && (
-                      <div className="space-y-4">
-                        <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-md">
-                          <p className="font-medium mb-2 text-black dark:text-white">
-                            Karta raqami:
-                          </p>
-                          <p className="text-xl font-mono text-black dark:text-white">
-                            4242 4242 4242 4242
-                          </p>
-                          <p className="mt-4 text-sm text-gray-600 dark:text-gray-300">
-                            {t("completePayment")}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
-                    {showUploadTimer && (
-                      <div className="space-y-4">
-                        <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-md">
-                          <p className="font-medium mb-2 text-black dark:text-white">
-                            {t("uploadReceipt")}
-                          </p>
-                          <div
-                            className={`border-2 border-dashed rounded-md p-8 text-center ${
-                              isDragging
-                                ? "border-[#00FF99] bg-[#00FF99]/5"
-                                : "border-gray-300 dark:border-gray-600"
-                            }`}
-                            onDragOver={handleDragOver}
-                            onDragLeave={handleDragLeave}
-                            onDrop={handleDrop}
-                          >
-                            <Upload className="h-10 w-10 mx-auto mb-4 text-[#00FF99]" />
-                            <p className="mb-2 text-black dark:text-white">
-                              {uploadedFile
-                                ? uploadedFile.name
-                                : "To‘lov chekini bu yerga tashlang yoki tanlang"}
-                            </p>
-                            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                              PDF, JPG, PNG (maks 5MB)
-                            </p>
-                            <input
-                              type="file"
-                              id="receipt"
-                              className="hidden"
-                              accept=".pdf,.jpg,.jpeg,.png"
-                              onChange={handleFileChange}
-                            />
-                            <Button
-                              asChild
-                              variant="outline"
-                              size="sm"
-                              className="border-[#00FF99] text-[#00FF99] hover:bg-[#00FF99] hover:text-white"
-                            >
-                              <label htmlFor="receipt">Fayl tanlash</label>
-                            </Button>
-                          </div>
-                        </div>
-                        <Button
-                          className="w-full bg-[#00FF99] text-white hover:bg-[#00FF99]/90"
-                          onClick={handleUpload}
-                          disabled={!uploadedFile}
-                        >
-                          {t("submit")}
-                        </Button>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
-            </TabsContent>
-
-            <TabsContent value="statistics" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card
-                  data-aos="fade-up"
-                  className="bg-white dark:bg-[#111827] shadow-lg"
-                >
-                  <CardHeader>
-                    <CardTitle className="text-black dark:text-white">
-                      Umumiy daromad
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center gap-3">
-                      <DollarSign className="h-8 w-8 text-[#00FF99]" />
-                      <div className="text-2xl font-bold text-[#00FF99]">
-                        {formatCurrency(mockUserData.totalEarnings, currency)}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card
-                  data-aos="fade-up"
-                  data-aos-delay="100"
-                  className="bg-white dark:bg-[#111827] shadow-lg"
-                >
-                  <CardHeader>
-                    <CardTitle className="text-black dark:text-white">
-                      Jami referallar
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center gap-3">
-                      <Users className="h-8 w-8 text-[#00FF99]" />
-                      <div className="text-2xl font-bold text-[#00FF99]">
-                        {mockUserData.totalReferrals}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card
-                  data-aos="fade-up"
-                  data-aos-delay="200"
-                  className="bg-white dark:bg-[#111827] shadow-lg"
-                >
-                  <CardHeader>
-                    <CardTitle className="text-black dark:text-white">
-                      Faol tariflar
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center gap-3">
-                      <TrendingUp className="h-8 w-8 text-[#00FF99]" />
-                      <div className="text-2xl font-bold text-[#00FF99]">
-                        {mockUserData.activeTariffsCount}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-
             <TabsContent value="settings" className="space-y-6">
               <Card
                 data-aos="fade-up"
@@ -927,112 +644,132 @@ export default function ProfilePage() {
                           })
                         }
                         className="border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                        disabled={!isEditingSettings}
                       />
                     </div>
                     <div className="space-y-2">
                       <Label
-                        htmlFor="phone"
+                        htmlFor="settings-email"
                         className="text-black dark:text-white"
                       >
-                        Telefon raqami
+                        Email
                       </Label>
                       <Input
-                        id="phone"
-                        value={profileData.phone}
-                        onChange={(e) =>
-                          setProfileData({
-                            ...profileData,
-                            phone: e.target.value,
-                          })
-                        }
+                        id="settings-email"
+                        type="email"
+                        value={settingsEmail}
+                        onChange={(e) => setSettingsEmail(e.target.value)}
                         className="border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                        disabled={!isEditingSettings}
                       />
                     </div>
-                    <Button
-                      className="bg-[#00FF99] text-white hover:bg-[#00FF99]/90"
-                      onClick={handleProfileUpdate}
-                    >
-                      Saqlash
-                    </Button>
-                  </div>
-
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-black dark:text-white">
-                      Parolni o‘zgartirish
-                    </h3>
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="current-password"
-                        className="text-black dark:text-white"
-                      >
-                        Joriy parol
-                      </Label>
-                      <Input
-                        id="current-password"
-                        type="password"
-                        className="border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="new-password"
-                        className="text-black dark:text-white"
-                      >
-                        Yangi parol
-                      </Label>
-                      <Input
-                        id="new-password"
-                        type="password"
-                        className="border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                      />
-                    </div>
-                    <Button
-                      className="bg-[#00FF99] text-white hover:bg-[#00FF99]/90"
-                      onClick={handlePasswordChange}
-                    >
-                      Parolni o‘zgartirish
-                    </Button>
-                  </div>
-
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-black dark:text-white">
-                      Bildirishnoma sozlamalari
-                    </h3>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label className="text-black dark:text-white">
-                          Email orqali bildirishnomalar
-                        </Label>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">
-                          Yangiliklar va yangilanishlarni email orqali oling
-                        </p>
+                    {isEditingSettings ? (
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => setIsEditingSettings(false)}
+                          className="flex-1 dark:bg-primary/10 dark:text-primary bg-red-400 dark:hover:bg-red-400 dark:hover:text-white  shadow-lg border-none  hover:bg-gray-300 text-white hover:text-black"
+                        >
+                          Bekor qilish
+                        </Button>
+                        <Button
+                          className="flex-1 bg-[#00FF99] text-white hover:bg-[#00FF99]/90"
+                          onClick={() => {
+                            handleProfileUpdate();
+                            setIsEditingSettings(false);
+                          }}
+                        >
+                          Saqlash
+                        </Button>
                       </div>
-                      <Switch
-                        checked={notifications.email}
-                        onCheckedChange={(checked) =>
-                          setNotifications({ ...notifications, email: checked })
-                        }
-                        className="data-[state=checked]:bg-[#00FF99]"
-                      />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label className="text-black dark:text-white">
-                          Push bildirishnomalar
-                        </Label>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">
-                          Tezkor bildirishnomalarni qurilmangizda oling
-                        </p>
-                      </div>
-                      <Switch
-                        checked={notifications.push}
-                        onCheckedChange={(checked) =>
-                          setNotifications({ ...notifications, push: checked })
-                        }
-                        className="data-[state=checked]:bg-[#00FF99]"
-                      />
-                    </div>
+                    ) : (
+                      <Button
+                        variant="destructive"
+                        onClick={() => setIsEditingSettings(true)}
+                        className="w-full bg-accent-teal/10 text-accent-teal hover:bg-accent-teal/20 shadow-lg border-none"
+                      >
+                        Tahrirlash
+                      </Button>
+                    )}
                   </div>
+                  {/* Parol o‘zgartirish va boshqa qismlar o‘z joyida */}
+                  {/* <Card
+                    data-aos="fade-up"
+                    className="bg-white dark:bg-[#111827] shadow-lg"
+                  >
+                    <CardHeader>
+                      <CardTitle className="text-black dark:text-white">
+                        Parolni o‘zgartirish
+                      </CardTitle>
+                      <CardDescription className="text-gray-600 dark:text-gray-300">
+                        Hisobingiz parolini yangilang.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <form
+                        onSubmit={handleChangePassword}
+                        className="space-y-4"
+                      >
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor="old-password"
+                            className="text-black dark:text-white"
+                          >
+                            Eski parol
+                          </Label>
+                          <Input
+                            id="old-password"
+                            type="password"
+                            value={oldPassword}
+                            onChange={(e) => setOldPassword(e.target.value)}
+                            className="border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor="new-password"
+                            className="text-black dark:text-white"
+                          >
+                            Yangi parol
+                          </Label>
+                          <Input
+                            id="new-password"
+                            type="password"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            className="border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor="confirm-password"
+                            className="text-black dark:text-white"
+                          >
+                            Yangi parolni tasdiqlang
+                          </Label>
+                          <Input
+                            id="confirm-password"
+                            type="password"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            className="border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                            required
+                          />
+                        </div>
+                        <Button
+                          type="submit"
+                          className="w-full bg-[#00FF99] text-white hover:bg-[#00FF99]/90"
+                          disabled={isChangingPassword}
+                        >
+                          {isChangingPassword
+                            ? "Yuklanmoqda..."
+                            : "Parolni o‘zgartirish"}
+                        </Button>
+                      </form>
+                    </CardContent>
+                  </Card> */}
                 </CardContent>
               </Card>
             </TabsContent>

@@ -357,7 +357,7 @@ const translations: Record<Language, Record<string, string | any>> = {
     addedToCartDesc: "добавлен в вашу корзину",
     addedToWishlist: "Добавлено в избранное",
     addedToWishlistDesc: "добавлен в ваше избранное",
-    active_users: "Активные пользователи",
+    active_users: "Активные",
     loading_users: "Загрузка пользователей...",
   },
   uz: {
@@ -527,7 +527,7 @@ const translations: Record<Language, Record<string, string | any>> = {
     addedToCartDesc: "savatga qo'shildi",
     addedToWishlist: "Sevimlilarga qo'shildi",
     addedToWishlistDesc: "sevimlilar ro'yxatiga qo'shildi",
-    active_users: "Faol foydalanuvchilar",
+    active_users: "Faol",
     loading_users: "Foydalanuvchilar yuklanmoqda...",
   },
   kz: {
@@ -680,7 +680,7 @@ const translations: Record<Language, Record<string, string | any>> = {
     addedToCartDesc: "себетке қосылды",
     addedToWishlist: "Таңдаулыларға қосылды",
     addedToWishlistDesc: "таңдаулыларға қосылды",
-    active_users: "Белсенді пайдаланушылар",
+    active_users: "Белсенді",
     loading_users: "Пайдаланушылар жүктелуде...",
   },
   kg: {
@@ -834,7 +834,7 @@ const translations: Record<Language, Record<string, string | any>> = {
     addedToCartDesc: "себетке кошулду",
     addedToWishlist: "Каалоолор тизмесине кошулду",
     addedToWishlistDesc: "каалоолор тизмесине кошулду",
-    active_users: "Активдүү колдонуучулар",
+    active_users: "Активдүү",
     loading_users: "Колдонуучулар жүктөлүүдө...",
   },
   tj: {
@@ -992,7 +992,7 @@ const translations: Record<Language, Record<string, string | any>> = {
     addedToCartDesc: "ба сабади шумо илова карда шуд",
     addedToWishlist: "Ба рӯйхати дӯстдошта илова карда шуд",
     addedToWishlistDesc: "ба рӯйхати дӯстдоштаи шумо илова карда шуд",
-    active_users: "Истифодабарандагони фаъол",
+    active_users: " фаъол",
     loading_users: "Истифодабарандагон боргузорӣ мешаванд...",
   },
   cn: {

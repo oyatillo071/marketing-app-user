@@ -17,11 +17,12 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { useLanguage } from "@/components/language-provider";
 import { registerUser } from "@/lib/api";
+import { toast } from "sonner";
 
 export default function EmailRegisterPage() {
   const { t } = useLanguage();
   const router = useRouter();
-  const { toast } = useToast();
+  // const { toast } = useToast();
 
   const [name, setName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
@@ -55,51 +56,44 @@ export default function EmailRegisterPage() {
     e.preventDefault();
 
     if (!email || !password || !name) {
-      toast({
-        title: "Error",
-        description: "All fields are required",
-        variant: "destructive",
-      });
+      toast.error("All fields are required");
       return;
     }
 
     if (password !== confirmPassword) {
-      toast({
-        title: "Error",
-        description: "Passwords do not match",
-        variant: "destructive",
-      });
+      toast.error("Passwords do not match");
       return;
     }
 
     setIsLoading(true);
 
     try {
+      // Referalni localStorage'dan oling
+      let referal = "";
+      if (typeof window !== "undefined") {
+        referal = localStorage.getItem("mlm-referal") || "";
+        localStorage.removeItem("mlm-referal");
+      }
+
       const userData = {
         name,
         email,
         password,
-        referal: "15555",
+        referal, // referal qiymatini yuboramiz
       };
 
       const result = await registerUser(userData);
 
-      toast({
-        title: result?.message || "Success",
-        description:
-          result?.description ||
-          "Emailga kod yuborildi. 3 minut ichida tasdiqlang.",
-      });
+      toast.success(
+        result?.description ||
+          "Emailga kod yuborildi. 3 minut ichida tasdiqlang."
+      );
 
       setIsVerifying(true);
       setTimer(180);
       setIsTimerExpired(false);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Ro‘yxatdan o‘tishda xatolik yuz berdi.",
-        variant: "destructive",
-      });
+      toast.error("Ro‘yxatdan o‘tishda xatolik yuz berdi.");
     } finally {
       setIsLoading(false);
     }
@@ -112,10 +106,7 @@ export default function EmailRegisterPage() {
     // Simulate API call
     setTimeout(() => {
       setIsLoading(false);
-      toast({
-        title: "Ro‘yxatdan o‘tish muvaffaqiyatli",
-        description: "Hisobingiz yaratildi.",
-      });
+      toast("Ro‘yxatdan o‘tish muvaffaqiyatli");
       router.push("/dashboard");
     }, 1500);
   };
@@ -183,7 +174,7 @@ export default function EmailRegisterPage() {
               </div>
 
               <Button type="submit" disabled={isLoading} className="w-full">
-                {isLoading ? "Yuborilmoqda..." : "Send Verification Code"}
+                {isLoading ? "Yuborilmoqda..." : "Send Verification Message"}
               </Button>
             </form>
           ) : (

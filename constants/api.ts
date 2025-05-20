@@ -6,9 +6,8 @@ export const API_CONFIG = {
   // Base URL for API requests when useMockData is false
 
   // baseUrl: "http://192.168.54.196:3000",
-
-  baseUrl: "https://tarmoqli-marketing.onrender.com",
-
+  baseUrl: "http://164.68.120.136:2255",
+  // baseUrl: "https://tarmoqli-marketing.onrender.com",
   // WebSocket URL for real-time updates
   wsUrl: "wss://api.mlm-platform.com/ws",
 

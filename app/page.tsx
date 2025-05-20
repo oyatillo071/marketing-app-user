@@ -68,6 +68,16 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [filteredProducts, setFilteredProducts] = useState(products);
 
+  // Faqat ro'yxatdan o'tmaganlar uchun: mlm_user bo'lsa dashboardga push
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const user = localStorage.getItem("mlm_user");
+      if (user) {
+        router.push("/dashboard");
+      }
+    }
+  }, [router]);
+
   useEffect(() => {
     if (selectedCategory) {
       setFilteredProducts(

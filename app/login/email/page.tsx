@@ -54,9 +54,11 @@ export default function EmailLoginPage() {
       const data = loginUser(email, password);
       console.log(data, "data");
 
-      setIsLoading(false);
-      router.push("/dashboard");
-      toast.info("Login successful");
+      setTimeout(() => {
+        toast.info("Login successful");
+        setIsLoading(false);
+        router.push("/dashboard");
+      }, 1500);
     } catch (error) {
       setIsLoading(false);
       toast.error("Invalid email or password.");

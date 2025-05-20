@@ -14,6 +14,14 @@ export default function Header() {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [userCount, setUserCount] = useState<number | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    // Faqat clientda ishlaydi
+    if (typeof window !== "undefined") {
+      setIsLoggedIn(!!localStorage.getItem("mlm_user"));
+    }
+  }, [pathname]);
 
   const isActive = (path: string) => {
     return pathname === path;
@@ -55,41 +63,59 @@ export default function Header() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
+            {/* Dashboard link faqat login bo‘lsa */}
+            {/* {isLoggedIn && ( */}
             <Link href="/dashboard" className="flex-shrink-0">
-              <h1 className="text-2xl font-bold text-primary">MLM Platform</h1>
+              <h1 className="md:text-2xl text-xl font-bold text-primary">
+                MLM Platform
+              </h1>
             </Link>
-            <nav className="hidden md:ml-6 md:flex md:space-x-4">
-              {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${
-                    isActive(item.href)
-                      ? "bg-primary text-primary-foreground"
-                      : "text-foreground hover:bg-muted"
-                  }`}
-                >
-                  {item.name}
-                </Link>
-              ))}
+            {/* )} */}
+            <nav className="hidden lg:ml-6 lg:flex md:space-x-4">
+              {navigation
+                .filter(
+                  (item) => item.href !== "/dashboard" || isLoggedIn // dashboard faqat login bo‘lsa
+                )
+                .map((item) => (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={`px-3 py-2 whitespace-nowrap rounded-md text-sm font-medium ${
+                      isActive(item.href)
+                        ? "bg-primary text-black"
+                        : "text-foreground hover:bg-muted "
+                    }`}
+                  >
+                    {item.name}
+                  </Link>
+                ))}
             </nav>
           </div>
           <div className="flex items-center space-x-4">
             <div className="hidden md:flex items-center space-x-2 gap-4">
               {/* Foydalanuvchilar sonini ko'rsatish */}
-              <div className="text-sm text-muted-foreground flex items-center space-x-2">
-                {userCount !== null ? (
-                  <>
-                    <span className="inline-block h-2 w-2 rounded-full bg-green-500"></span>
-                    <span>{`${t("active_users")}: ${userCount}`}</span>
-                  </>
-                ) : (
-                  <span>{t("loading_users")}</span>
-                )}
-              </div>
+              {userCount !== null ? (
+                <div className="flex items-center space-x-2">
+                  <span className="inline-block h-2 w-2 rounded-full bg-green-500"></span>
+                  <span className="hidden xl:block">{`${t(
+                    "active_users"
+                  )}: `}</span>
+                  {userCount}
+                </div>
+              ) : (
+                <span>{t("loading_users")}</span>
+              )}
               <LanguageSwitcher />
               <ThemeToggle />
-              {pathname === "/" || pathname === "/register" ? (
+              {/* Profil tugmasi faqat login bo‘lsa */}
+              {isLoggedIn ? (
+                <Button asChild size="sm" variant="outline">
+                  <Link href="/dashboard">
+                    <User className="h-4 w-4 mr-2" />
+                    {t("profile")}
+                  </Link>
+                </Button>
+              ) : pathname === "/" || pathname === "/register" ? (
                 <Button asChild size="sm">
                   <Link href="/login">{t("login")}</Link>
                 </Button>
@@ -97,16 +123,19 @@ export default function Header() {
                 <Button asChild size="sm">
                   <Link href="/register">{t("register")}</Link>
                 </Button>
-              ) : (
-                <Button asChild size="sm" variant="outline">
-                  <Link href="/dashboard">
-                    <User className="h-4 w-4 mr-2" />
-                    {t("profile")}
-                  </Link>
-                </Button>
-              )}
+              ) : null}
             </div>
-            <div className="md:hidden">
+            <div className="md:hidden flex items-center">
+              {/* Foydalanuvchilar sonini ko'rsatish */}
+              {userCount !== null ? (
+                <div className="flex items-center space-x-2">
+                  <span className="inline-block h-2 w-2 rounded-full bg-green-500"></span>
+                  <span>{`${t("active_users")}: `}</span>
+                  {userCount}
+                </div>
+              ) : (
+                <span>{t("loading_users")}</span>
+              )}
               <Button
                 variant="ghost"
                 size="icon"
