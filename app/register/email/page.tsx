@@ -1,40 +1,66 @@
-"use client"
+"use client";
 
-import type React from "react"
-
-import { useState } from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { useToast } from "@/components/ui/use-toast"
-import { useLanguage } from "@/components/language-provider"
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { useToast } from "@/components/ui/use-toast";
+import { useLanguage } from "@/components/language-provider";
+import { registerUser } from "@/lib/api";
 
 export default function EmailRegisterPage() {
-  const { t } = useLanguage()
-  const router = useRouter()
-  const { toast } = useToast()
-  const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
-  const [phone, setPhone] = useState("")
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [verificationCode, setVerificationCode] = useState("")
-  const [isVerifying, setIsVerifying] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const { t } = useLanguage();
+  const router = useRouter();
+  const { toast } = useToast();
 
-  const handleSendCode = (e: React.FormEvent) => {
-    e.preventDefault()
+  const [name, setName] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
+  const [verificationCode, setVerificationCode] = useState<string>("");
+  const [referal, setReferal] = useState<string>("");
 
-    if (!email) {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isVerifying, setIsVerifying] = useState<boolean>(false);
+  const [timer, setTimer] = useState<number>(180);
+  const [isTimerExpired, setIsTimerExpired] = useState<boolean>(false);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    if (isVerifying && timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+    }
+
+    if (timer === 0) {
+      setIsTimerExpired(true);
+    }
+
+    return () => clearInterval(interval);
+  }, [isVerifying, timer]);
+
+  const handleSendCode = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (!email || !password || !name) {
       toast({
         title: "Error",
-        description: "Email is required",
+        description: "All fields are required",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
     if (password !== confirmPassword) {
@@ -42,49 +68,80 @@ export default function EmailRegisterPage() {
         title: "Error",
         description: "Passwords do not match",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
-    setIsLoading(true)
+    setIsLoading(true);
 
-    // Simulate API call to send verification code to email
-    setTimeout(() => {
-      setIsLoading(false)
-      setIsVerifying(true)
+    try {
+      const userData = {
+        name,
+        email,
+        password,
+        referal: "15555",
+      };
+
+      const result = await registerUser(userData);
+
       toast({
-        title: "Verification code sent",
-        description: "Please check your email for the verification code.",
-      })
-    }, 1500)
-  }
+        title: result?.message || "Success",
+        description:
+          result?.description ||
+          "Emailga kod yuborildi. 3 minut ichida tasdiqlang.",
+      });
 
-  const handleRegister = (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-
-    // Simulate API call to verify code and register user
-    setTimeout(() => {
-      setIsLoading(false)
-      router.push("/dashboard")
+      setIsVerifying(true);
+      setTimer(180);
+      setIsTimerExpired(false);
+    } catch (error) {
       toast({
-        title: "Registration successful",
-        description: "You have been registered successfully.",
-      })
-    }, 1500)
-  }
+        title: "Error",
+        description: "Ro‘yxatdan o‘tishda xatolik yuz berdi.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerify = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    // Simulate API call
+    setTimeout(() => {
+      setIsLoading(false);
+      toast({
+        title: "Ro‘yxatdan o‘tish muvaffaqiyatli",
+        description: "Hisobingiz yaratildi.",
+      });
+      router.push("/dashboard");
+    }, 1500);
+  };
+
+  const formattedTime = `${Math.floor(timer / 60)}:${(timer % 60)
+    .toString()
+    .padStart(2, "0")}`;
 
   return (
-    <div className="container mx-auto flex items-center justify-center min-h-[calc(100vh-4rem)] p-4 md:p-8">
-      <Card className="w-full max-w-md mx-auto" data-aos="fade-up">
+    <div className="container mx-auto flex items-center justify-center min-h-[calc(100vh-4rem)] p-4">
+      <Card className="w-full max-w-md mx-auto">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">{t("register")}</CardTitle>
-          <CardDescription className="text-center">{isVerifying ? t("verify") : t("register")}</CardDescription>
+          <CardTitle className="text-2xl font-bold text-center">
+            {t("register")}
+          </CardTitle>
+          <CardDescription className="text-center">
+            {isVerifying
+              ? `Tasdiqlash kodi yuborildi. Qolgan vaqt: ${formattedTime}`
+              : t("register")}
+          </CardDescription>
         </CardHeader>
+
         <CardContent className="space-y-4">
           {!isVerifying ? (
             <form onSubmit={handleSendCode} className="space-y-4">
-              <div className="space-y-2">
+              <div>
                 <Label htmlFor="name">{t("name")}</Label>
                 <Input
                   id="name"
@@ -92,12 +149,9 @@ export default function EmailRegisterPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
-                  className="bg-secondary/10"
-                  data-aos="fade-up"
-                  data-aos-delay="100"
                 />
               </div>
-              <div className="space-y-2">
+              <div>
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
@@ -105,25 +159,9 @@ export default function EmailRegisterPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="bg-secondary/10"
-                  data-aos="fade-up"
-                  data-aos-delay="150"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">{t("phone")} (Optional)</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="+1234567890"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="bg-secondary/10"
-                  data-aos="fade-up"
-                  data-aos-delay="200"
-                />
-              </div>
-              <div className="space-y-2">
+              <div>
                 <Label htmlFor="password">{t("password")}</Label>
                 <Input
                   id="password"
@@ -131,58 +169,81 @@ export default function EmailRegisterPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="bg-secondary/10"
-                  data-aos="fade-up"
-                  data-aos-delay="250"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="confirm-password">Confirm {t("password")}</Label>
+              <div>
+                <Label htmlFor="confirmPassword">Confirm {t("password")}</Label>
                 <Input
-                  id="confirm-password"
+                  id="confirmPassword"
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
-                  className="bg-secondary/10"
-                  data-aos="fade-up"
-                  data-aos-delay="300"
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={isLoading} data-aos="zoom-in" data-aos-delay="350">
-                {isLoading ? "Sending code..." : "Send Verification Code"}
+
+              <Button type="submit" disabled={isLoading} className="w-full">
+                {isLoading ? "Yuborilmoqda..." : "Send Verification Code"}
               </Button>
             </form>
           ) : (
-            <form onSubmit={handleRegister} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="verification-code">{t("verify")}</Label>
+            <form onSubmit={handleVerify} className="space-y-4">
+              {/* <div> */}
+              {/* <Label htmlFor="verificationCode">Tasdiqlash kodi</Label>
                 <Input
-                  id="verification-code"
+                  id="verificationCode"
                   type="text"
                   placeholder="123456"
                   value={verificationCode}
                   onChange={(e) => setVerificationCode(e.target.value)}
                   required
-                  className="bg-secondary/10"
-                  data-aos="fade-up"
                 />
-              </div>
-              <Button type="submit" className="w-full" disabled={isLoading} data-aos="zoom-in" data-aos-delay="100">
-                {isLoading ? "Verifying..." : "Complete Registration"}
+              </div> */}
+              {/* <Button type="submit" disabled={isLoading} className="w-full">
+                {isLoading ? "Tekshirilmoqda..." : "Ro‘yxatdan o‘tish"}
+              </Button> */}
+
+              <Button
+                type="button"
+                className="w-full"
+                variant="outline"
+                onClick={() => {
+                  setIsVerifying(false);
+                  setTimer(180);
+                  setIsTimerExpired(false);
+                }}
+              >
+                Ma’lumotlarni qayta kiritish
+              </Button>
+
+              <Button
+                type="button"
+                className="w-full"
+                variant="secondary"
+                disabled={!isTimerExpired}
+                onClick={() => {
+                  setIsVerifying(false);
+                  setTimer(180);
+                  setIsTimerExpired(false);
+                }}
+              >
+                {isTimerExpired
+                  ? "Qayta kod yuborish"
+                  : `Qayta yuborish (${formattedTime})`}
               </Button>
             </form>
           )}
         </CardContent>
+
         <CardFooter className="flex flex-col space-y-2">
-          <div className="text-sm text-center text-muted-foreground">
+          <p className="text-sm text-center text-muted-foreground">
             {t("login")}?{" "}
             <Link href="/login" className="text-primary hover:underline">
               {t("login")}
             </Link>
-          </div>
+          </p>
         </CardFooter>
       </Card>
     </div>
-  )
+  );
 }

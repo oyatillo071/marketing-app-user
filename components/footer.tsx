@@ -60,23 +60,23 @@ export default function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <Telegram className="h-5 w-5 text-secondary hover:text-primary transition-colors" />
+                <Telegram className="h-5 w-5  hover:text-primary transition-colors" />
               </Link>
               <Link
                 href="https://wa.me/1234567890"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <WhatsApp className="h-5 w-5 text-secondary hover:text-primary transition-colors" />
+                <WhatsApp className="h-5 w-5  hover:text-primary transition-colors" />
               </Link>
               <Link href="#" target="_blank" rel="noopener noreferrer">
-                <Instagram className="h-5 w-5 text-secondary hover:text-primary transition-colors" />
+                <Instagram className="h-5 w-5  hover:text-primary transition-colors" />
               </Link>
               <Link href="#" target="_blank" rel="noopener noreferrer">
-                <Facebook className="h-5 w-5 text-secondary hover:text-primary transition-colors" />
+                <Facebook className="h-5 w-5  hover:text-primary transition-colors" />
               </Link>
               <Link href="#" target="_blank" rel="noopener noreferrer">
-                <Twitter className="h-5 w-5 text-secondary hover:text-primary transition-colors" />
+                <Twitter className="h-5 w-5  hover:text-primary transition-colors" />
               </Link>
             </div>
           </div>

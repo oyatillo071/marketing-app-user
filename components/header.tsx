@@ -20,7 +20,7 @@ export default function Header() {
   };
 
   const navigation = [
-    { name: t("dashboard"), href: "/dashboard/profile" },
+    { name: t("dashboard"), href: "/dashboard" },
     { name: t("products"), href: "/products" },
     { name: t("tariffs"), href: "/tariffs" },
     { name: t("about"), href: "/about" },
@@ -55,7 +55,7 @@ export default function Header() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
-            <Link href="/dashboard/profile" className="flex-shrink-0">
+            <Link href="/dashboard" className="flex-shrink-0">
               <h1 className="text-2xl font-bold text-primary">MLM Platform</h1>
             </Link>
             <nav className="hidden md:ml-6 md:flex md:space-x-4">
@@ -99,7 +99,7 @@ export default function Header() {
                 </Button>
               ) : (
                 <Button asChild size="sm" variant="outline">
-                  <Link href="/dashboard/profile">
+                  <Link href="/dashboard">
                     <User className="h-4 w-4 mr-2" />
                     {t("profile")}
                   </Link>

@@ -1,16 +1,19 @@
 export const API_CONFIG = {
   // Set to true to use mock data from data.json
   // Set to false to use real API endpoints
-  useMockData: true,
+  useMockData: false,
 
   // Base URL for API requests when useMockData is false
-  baseUrl: "https://api.mlm-platform.com/v1",
+
+  // baseUrl: "http://192.168.54.196:3000",
+
+  baseUrl: "https://tarmoqli-marketing.onrender.com",
 
   // WebSocket URL for real-time updates
   wsUrl: "wss://api.mlm-platform.com/ws",
 
   // Timeout in milliseconds
-  timeout: 1000,
+  // timeout: 10000,
 
   // Payment processing timeouts (in milliseconds)
   paymentTimeouts: {

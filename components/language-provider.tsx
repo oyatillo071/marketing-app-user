@@ -35,8 +35,21 @@ const currencyRates: Record<Currency, number> = {
   CNY: 7,
 };
 
-const translations: Record<Language, Record<string, string>> = {
+const translations: Record<Language, Record<string, string | any>> = {
   en: {
+    hero: {
+      title: "Join Our Global MLM Network",
+      subtitle:
+        "Earn with premium health and beauty products through our international community.",
+      ctaRegister: "Get Started",
+      ctaLogin: "Sign In",
+    },
+    products: {
+      title: "Our Products",
+      all: "All",
+      skincare: "Skincare",
+      health: "Health",
+    },
     welcome: "Welcome",
     login: "Login",
     register: "Register",
@@ -148,7 +161,7 @@ const translations: Record<Language, Record<string, string>> = {
       "Join thousands of successful partners who are already earning with our MLM platform.",
     getStarted: "Get Started",
     viewTariffs: "View Tariffs",
-    products: "Products",
+    // products: "Products",
     about: "About",
     referralBonusInfo:
       "You'll earn bonuses when your referrals register and add funds to their balance.",
@@ -348,6 +361,19 @@ const translations: Record<Language, Record<string, string>> = {
     loading_users: "Загрузка пользователей...",
   },
   uz: {
+    hero: {
+      title: "Xalqaro MLM Tarmog'imizga Qo'shiling",
+      subtitle:
+        "Sifatli sog'liqni saqlash va go'zallik mahsulotlari orqali daromad toping.",
+      ctaRegister: "Boshlash",
+      ctaLogin: "Kirish",
+    },
+    products: {
+      title: "Mahsulotlarimiz",
+      all: "Hammasi",
+      skincare: "Terini Parhez Qilish",
+      health: "Sog'liq",
+    },
     welcome: "Xush kelibsiz",
     login: "Kirish",
     register: "Ro'yxatdan o'tish",
@@ -461,7 +487,7 @@ const translations: Record<Language, Record<string, string>> = {
       "MLM platformamiz bilan allaqachon pul ishlayotgan minglab muvaffaqiyatli hamkorlarga qo'shiling.",
     getStarted: "Boshlash",
     viewTariffs: "Tariflarni ko'rish",
-    products: "Mahsulotlar",
+    // products: "Mahsulotlar",
     about: "Biz haqimizda",
     referralBonusInfo:
       "Referallaringiz ro'yxatdan o'tganda va balanslarini to'ldirganda bonus olasiz.",
