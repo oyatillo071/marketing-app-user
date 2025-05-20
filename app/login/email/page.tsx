@@ -46,22 +46,22 @@ export default function EmailLoginPage() {
   //   }, 1500);
   // };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      const data = loginUser(email, password);
-      console.log(data, "data");
-
-      setTimeout(() => {
-        toast.info("Login successful");
-        setIsLoading(false);
-        router.push("/dashboard");
-      }, 1500);
-    } catch (error) {
+      const data = await loginUser(email, password);
+      toast.info("Login successful");
       setIsLoading(false);
-      toast.error("Invalid email or password.");
+      router.push("/dashboard");
+    } catch (error: any) {
+      setIsLoading(false);
+      if (error?.message === "Network Error" || error?.code === "ERR_NETWORK") {
+        toast.error("Tarmoqda xatolik. Iltimos, internetingizni tekshiring.");
+      } else {
+        toast.error("Invalid email or password.");
+      }
       console.error("Login error:", error);
     }
 
