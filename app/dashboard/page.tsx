@@ -48,6 +48,7 @@ import { ReferralShare } from "@/components/referral-share";
 import { formatCurrency } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { Toaster, toast } from "sonner";
+import { TariffCountdown } from "./TariffCountdown";
 
 // Mock data
 const mockUserData = {
@@ -89,6 +90,8 @@ const mockUserData = {
         "https://picsum.photos/id/2/400/300",
         "https://picsum.photos/id/3/400/300",
       ],
+      startDate: "2023-01-01T00:00:00Z",
+      endDate: "2027-01-31T23:59:59Z",
     },
     {
       id: 2,
@@ -108,6 +111,8 @@ const mockUserData = {
         "https://picsum.photos/id/5/400/300",
         "https://picsum.photos/id/6/400/300",
       ],
+      startDate: "2023-02-01T00:00:00Z",
+      endDate: "2023-03-02T23:59:59Z",
     },
     {
       id: 3,
@@ -127,6 +132,8 @@ const mockUserData = {
         "https://picsum.photos/id/8/400/300",
         "https://picsum.photos/id/9/400/300",
       ],
+      startDate: "2023-03-03T00:00:00Z",
+      endDate: "2023-05-31T23:59:59Z",
     },
   ],
   faq: [
@@ -364,7 +371,7 @@ export default function ProfilePage() {
                     <Card
                       data-aos="fade-up"
                       data-aos-delay="100"
-                      className=" shadow-lg"
+                      className="shadow-lg"
                     >
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2 ">
@@ -376,6 +383,17 @@ export default function ProfilePage() {
                         <p className="text-xl font-mono text-center ">
                           {mockUserData.id}
                         </p>
+                        {/* Joriy tarifga qancha vaqt qolganini ko‘rsatish */}
+                        {mockUserData.tariffs.length > 0 && (
+                          <div className="mt-2 flex justify-center">
+                            <TariffCountdown
+                              startDate={
+                                mockUserData.tariffs[0].startDate || new Date()
+                              }
+                              endDate={mockUserData.tariffs[0].endDate}
+                            />
+                          </div>
+                        )}
                       </CardContent>
                     </Card>
                   </div>
