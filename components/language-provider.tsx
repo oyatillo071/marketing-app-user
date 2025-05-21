@@ -37,19 +37,19 @@ const currencyRates: Record<Currency, number> = {
 
 const translations: Record<Language, Record<string, string | any>> = {
   en: {
-    hero: {
-      title: "Join Our Global MLM Network",
-      subtitle:
-        "Earn with premium health and beauty products through our international community.",
-      ctaRegister: "Get Started",
-      ctaLogin: "Sign In",
-    },
-    products: {
-      title: "Our Products",
-      all: "All",
-      skincare: "Skincare",
-      health: "Health",
-    },
+    // hero: {
+    //   title: "Join Our Global MLM Network",
+    //   subtitle:
+    //     "Earn with premium health and beauty products through our international community.",
+    //   ctaRegister: "Get Started",
+    //   ctaLogin: "Sign In",
+    // },
+    // products: {
+    //   title: "Our Products",
+    //   all: "All",
+    //   skincare: "Skincare",
+    //   health: "Health",
+    // },
     welcome: "Welcome",
     login: "Login",
     register: "Register",
