@@ -361,20 +361,22 @@ const translations: Record<Language, Record<string, string | any>> = {
     loading_users: "Загрузка пользователей...",
   },
   uz: {
-    hero: {
-      title: "Xalqaro MLM Tarmog'imizga Qo'shiling",
-      subtitle:
-        "Sifatli sog'liqni saqlash va go'zallik mahsulotlari orqali daromad toping.",
-      ctaRegister: "Boshlash",
-      ctaLogin: "Kirish",
-    },
-    products: {
-      title: "Mahsulotlarimiz",
-      all: "Hammasi",
-      skincare: "Terini Parhez Qilish",
-      health: "Sog'liq",
-    },
+    // hero: {
+    //   title: "Xalqaro MLM Tarmog'imizga Qo'shiling",
+    //   subtitle:
+    //     "Sifatli sog'liqni saqlash va go'zallik mahsulotlari orqali daromad toping.",
+    //   ctaRegister: "Boshlash",
+    //   ctaLogin: "Kirish",
+    // },
+    // products: {
+    //   title: "Mahsulotlarimiz",
+    //   all: "Hammasi",
+    //   skincare: "Terini Parhez Qilish",
+    //   health: "Sog'liq",
+    // },
     welcome: "Xush kelibsiz",
+    products: "Mahsulotlar",
+    hero: "Xush kelibsiz",
     login: "Kirish",
     register: "Ro'yxatdan o'tish",
     dashboard: "Boshqaruv paneli",
