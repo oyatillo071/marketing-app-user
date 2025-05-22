@@ -340,7 +340,7 @@ export default function TariffsPage() {
               <div className="relative h-56">
                 <Image
                   src={tariff.photo_url || "/placeholder.svg"}
-                  alt={translation?.title}
+                  alt={translation?.title || "Tariff image"}
                   fill
                   className="object-cover"
                 />
