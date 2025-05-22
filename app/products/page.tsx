@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { ShoppingCart, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,90 +14,83 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useLanguage } from "@/components/language-provider";
-import { formatCurrency } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { fetchProducts } from "@/lib/api";
 
-// Mock product data
-const mockProducts = [
-  {
-    id: 1,
-    name: "Rejuvenating Face Cream",
-    price: 45 * 12000, // 540,000 UZS
-    rating: 4.8,
-    reviews: 124,
-    image: "https://picsum.photos/id/21/400/400",
-    description: "Advanced anti-aging formula with natural ingredients",
-    category: "skincare",
-  },
-  {
-    id: 2,
-    name: "Vitamin C Serum",
-    price: 35 * 12000, // 420,000 UZS
-    rating: 4.7,
-    reviews: 98,
-    image: "https://picsum.photos/id/22/400/400",
-    description: "Brightening serum for radiant skin",
-    category: "skincare",
-  },
-  {
-    id: 3,
-    name: "Collagen Supplement",
-    price: 29 * 12000, // 348,000 UZS
-    rating: 4.5,
-    reviews: 76,
-    image: "https://picsum.photos/id/23/400/400",
-    description: "Support skin elasticity and joint health",
-    category: "supplements",
-  },
-  {
-    id: 4,
-    name: "Hydrating Mask",
-    price: 25 * 12000, // 300,000 UZS
-    rating: 4.6,
-    reviews: 62,
-    image: "https://picsum.photos/id/24/400/400",
-    description: "Deep hydration for dry and sensitive skin",
-    category: "skincare",
-  },
-  {
-    id: 5,
-    name: "Detox Tea",
-    price: 18 * 12000, // 216,000 UZS
-    rating: 4.4,
-    reviews: 53,
-    image: "https://picsum.photos/id/25/400/400",
-    description: "Natural cleansing blend of herbs",
-    category: "wellness",
-  },
-  {
-    id: 6,
-    name: "Protein Shake",
-    price: 32 * 12000, // 384,000 UZS
-    rating: 4.3,
-    reviews: 47,
-    image: "https://picsum.photos/id/26/400/400",
-    description: "Plant-based protein for muscle recovery",
-    category: "supplements",
-  },
-];
+type ProductTranslation = {
+  id: number;
+  product_id: number;
+  language: string;
+  name: string;
+  description: string;
+};
+
+type ProductPrice = {
+  id: number;
+  product_id: number;
+  currency: string;
+  value: number;
+};
+
+type Product = {
+  id: number;
+  rating: number;
+  rewiev: number;
+  photo_url: string[];
+  translations: ProductTranslation[];
+  prices: ProductPrice[];
+};
 
 const categories = ["all", "skincare", "supplements", "wellness"];
 
 export default function ProductsPage() {
-  const { currency } = useLanguage();
+  const { currency, language } = useLanguage();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
-
-  const filteredProducts = mockProducts.filter((product) => {
-    const matchesSearch =
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory =
-      selectedCategory === "all" || product.category === selectedCategory;
-
-    return matchesSearch && matchesCategory;
-  });
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const { push } = useRouter();
+
+  useEffect(() => {
+    setLoading(true);
+    fetchProducts()
+      .then((data) => {
+        setProducts(data.products || data);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError("Failed to load products");
+        setLoading(false);
+      });
+  }, []);
+
+  // Helper: get translation by language, fallback to 'en' or first
+  const getTranslation = (translations: ProductTranslation[]) => {
+    return (
+      translations.find((t) => t.language === language) ||
+      translations.find((t) => t.language === "en") ||
+      translations[0] ||
+      { name: "", description: "" }
+    );
+  };
+
+  // Helper: get price by currency, fallback to first
+  const getPrice = (prices: ProductPrice[]) => {
+    return (
+      prices.find((p) => p.currency === currency) ||
+      prices[0] ||
+      { value: 0, currency: "" }
+    );
+  };
+
+  const filteredProducts = products.filter((product) => {
+    const translation = getTranslation(product.translations || []);
+    const matchesSearch =
+      translation.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      translation.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesSearch;
+  });
 
   return (
     <div className="container mx-auto p-4 md:p-8">
@@ -132,49 +125,65 @@ export default function ProductsPage() {
         </div>
       </div>
 
-      {filteredProducts.length > 0 ? (
+      {loading ? (
+        <div className="text-center py-12" data-aos="fade-up">
+          <p className="text-lg text-muted-foreground">Loading products...</p>
+        </div>
+      ) : error ? (
+        <div className="text-center py-12" data-aos="fade-up">
+          <p className="text-lg text-red-500">{error}</p>
+        </div>
+      ) : filteredProducts.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProducts.map((product) => (
-            <Card
-              key={product.id}
-              className="hover:cursor-pointer flex flex-col justify-between hover:scale-105 transition-transform hover:shadow-lg"
-              data-aos="fade-up"
-              onClick={() => push(`/products/${product.id}`)}
-            >
-              <div className="relative h-64 overflow-hidden ">
-                <Image
-                  src={product.image || "/placeholder.svg"}
-                  alt={product.name}
-                  fill
-                  className="object-cover transition-transform hover:scale-105"
-                />
-              </div>
-              <CardHeader>
-                <CardTitle>{product.name}</CardTitle>
-                <CardDescription>{product.description}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex justify-between items-center">
-                  <div className="text-2xl font-bold text-primary">
-                    {formatCurrency(product.price, currency)}
-                  </div>
-                  <div className="flex items-center">
-                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
-                    <span className="font-medium">{product.rating}</span>
-                    <span className="text-muted-foreground text-sm ml-1">
-                      ({product.reviews})
-                    </span>
-                  </div>
+          {filteredProducts.map((product) => {
+            const translation = getTranslation(product.translations || []);
+            const priceObj = getPrice(product.prices || []);
+            return (
+              <Card
+                key={product.id}
+                className="hover:cursor-pointer flex flex-col justify-between hover:scale-105 transition-transform hover:shadow-lg"
+                data-aos="fade-up"
+                onClick={() => push(`/products/${product.id}`)}
+              >
+                <div className="relative h-64 overflow-hidden ">
+                  <Image
+                    src={
+                      product.photo_url && product.photo_url.length > 0
+                        ? product.photo_url[0]
+                        : "/placeholder.svg"
+                    }
+                    alt={translation.name}
+                    fill
+                    className="object-cover transition-transform hover:scale-105"
+                  />
                 </div>
-              </CardContent>
-              <CardFooter>
-                <Button className="w-full" data-aos="zoom-in">
-                  <ShoppingCart className="mr-2 h-4 w-4" />
-                  Add to Cart
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
+                <CardHeader>
+                  <CardTitle>{translation.name}</CardTitle>
+                  <CardDescription>{translation.description}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex justify-between items-center">
+                    <div className="text-2xl font-bold text-primary">
+                      {priceObj.value} {priceObj.currency}
+                    </div>
+                    <div className="flex items-center">
+                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
+                      <span className="font-medium">{product.rating}</span>
+                      <span className="text-muted-foreground text-sm ml-1">
+                        ({product.rewiev})
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Button className="w-full" data-aos="zoom-in">
+                    <ShoppingCart className="mr-2 h-4 w-4" />
+                    Add to Cart
+                  </Button>
+                </CardFooter>
+              </Card>
+            );
+          })}
         </div>
       ) : (
         <div className="text-center py-12" data-aos="fade-up">
