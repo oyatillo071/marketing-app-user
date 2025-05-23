@@ -32,11 +32,17 @@ type ProductPrice = {
   value: number;
 };
 
+type ProductPhoto = {
+  id: number;
+  productId: number;
+  photo_url: string;
+};
+
 type Product = {
   id: number;
   rating: number;
   rewiev: number;
-  photo_url: string[];
+  photo_url: ProductPhoto[];
   translations: ProductTranslation[];
   prices: ProductPrice[];
 };
@@ -138,6 +144,11 @@ export default function ProductsPage() {
           {filteredProducts.map((product) => {
             const translation = getTranslation(product.translations || []);
             const priceObj = getPrice(product.prices || []);
+            // Rasm manzilini to'g'ri olish
+            const imageUrl =
+              product.photo_url && product.photo_url.length > 0
+                ? product.photo_url[0].photo_url
+                : "/placeholder.svg";
             return (
               <Card
                 key={product.id}
@@ -147,12 +158,8 @@ export default function ProductsPage() {
               >
                 <div className="relative h-64 overflow-hidden ">
                   <Image
-                    src={
-                      product.photo_url && product.photo_url.length > 0
-                        ? product.photo_url[0]
-                        : "/placeholder.svg"
-                    }
-                    alt={translation.name}
+                    src={imageUrl}
+                    alt={translation.name || "Product Image"}
                     fill
                     className="object-cover transition-transform hover:scale-105"
                   />
