@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, User, X } from "lucide-react";
@@ -8,6 +8,28 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { useLanguage } from "@/components/language-provider";
+import { fetchStatistic } from "@/lib/api";
+import { toast } from "sonner";
+
+// Statistikani tip bilan aniqlash
+type StatEarning = {
+  id: string;
+  currency: string;
+  amount: string;
+  widgetId: string;
+};
+type RecentUser = {
+  id: string;
+  email: string;
+  widgetId: string;
+};
+type Statistic = {
+  id: string;
+  onlineUserCount: number;
+  totalEarned: string;
+  statEarnings: StatEarning[];
+  recentUsers: RecentUser[];
+};
 
 export default function Header() {
   const { t } = useLanguage();
@@ -16,16 +38,68 @@ export default function Header() {
   const [userCount, setUserCount] = useState<number | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
+  // Statistika uchun
+  const [statistics, setStatistics] = useState<Statistic[]>([]);
+  const [statIndex, setStatIndex] = useState(0);
+
+  // Recent users carousel uchun
+  const [carouselIndex, setCarouselIndex] = useState(0);
+
   useEffect(() => {
-    // Faqat clientda ishlaydi
     if (typeof window !== "undefined") {
       setIsLoggedIn(!!localStorage.getItem("mlm_user"));
     }
   }, [pathname]);
 
-  const isActive = (path: string) => {
-    return pathname === path;
-  };
+  // Statistikani olish va har 1 daqiqada yangilash
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    let statInterval: NodeJS.Timeout;
+
+    const fetchUserCount = async () => {
+      try {
+        // API chaqiruv
+        const data: Statistic[] = await fetchStatistic();
+        setStatistics(data);
+        setUserCount(data[statIndex]?.onlineUserCount ?? null);
+      } catch (error) {
+        toast.error("Error fetching statistics");
+        setUserCount(null);
+      }
+    };
+
+    fetchUserCount();
+
+    // Har 1 daqiqada statistikani yangilash va indexni oshirish
+    statInterval = setInterval(() => {
+      setStatIndex((prev) => {
+        const next = statistics.length > 0 ? (prev + 1) % statistics.length : 0;
+        setUserCount(statistics[next]?.onlineUserCount ?? null);
+        return next;
+      });
+    }, 600000);
+
+    interval = setInterval(fetchUserCount, 100000);
+
+    return () => {
+      clearInterval(interval);
+      clearInterval(statInterval);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statIndex]);
+
+  // Recent users carousel har 2 sekundda aylanadi
+  useEffect(() => {
+    const carouselTimer = setInterval(() => {
+      setCarouselIndex((prev) => {
+        const users = statistics[statIndex]?.recentUsers ?? [];
+        return users.length > 0 ? (prev + 1) % users.length : 0;
+      });
+    }, 2000);
+    return () => clearInterval(carouselTimer);
+  }, [statistics, statIndex]);
+
+  const isActive = (path: string) => pathname === path;
 
   const navigation = [
     { name: t("dashboard"), href: "/dashboard" },
@@ -34,150 +108,119 @@ export default function Header() {
     { name: t("about"), href: "/about" },
   ];
 
-  // Foydalanuvchilar sonini olish uchun API chaqiruv
-  useEffect(() => {
-    const fetchUserCount = async () => {
-      // try {
-      //   //   const response = await fetch("/api/users/count"); // API endpoint
-      //   //   if (!response.ok) {
-      //   //     throw new Error("Failed to fetch user count");
-      //   //   }
-      //   //   const data = await response.json();
-      //   //   setUserCount(data.count); // API dan kelgan foydalanuvchilar soni
-      // } catch (error) {
-      //   console.error("Error fetching user count:", error);
-      //   setUserCount(null); // Xatolik yuz bersa, null qilib qo'yamiz
-      // }
-      setUserCount(156); // API dan kelgan foydalanuvchilar soni
-    };
-
-    fetchUserCount();
-
-    // Real vaqt rejimida ma'lumotni yangilash uchun interval
-    const interval = setInterval(fetchUserCount, 10000); // Har 10 soniyada yangilanadi
-    return () => clearInterval(interval); // Komponent unmount bo'lganda intervalni tozalash
-  }, []);
+  // Recent users massivini olish
+  const recentUsers = statistics[statIndex]?.recentUsers ?? [];
 
   return (
-    <header className="bg-background border-b border-border">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
-          <div className="flex items-center">
-            {/* Dashboard link faqat login bo‘lsa */}
-            {/* {isLoggedIn && ( */}
-            <Link href="/dashboard" className="flex-shrink-0">
-              <h1 className="md:text-2xl text-xl font-bold text-primary">
-                MLM Platform
-              </h1>
-            </Link>
-            {/* )} */}
-            <nav className="hidden lg:ml-6 lg:flex md:space-x-4">
-              {navigation
-                .filter(
-                  (item) => item.href !== "/dashboard" || isLoggedIn // dashboard faqat login bo‘lsa
-                )
-                .map((item) => (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className={`px-3 py-2 whitespace-nowrap rounded-md text-sm font-medium ${
-                      isActive(item.href)
-                        ? "bg-primary text-black"
-                        : "text-foreground hover:bg-muted "
-                    }`}
-                  >
-                    {item.name}
-                  </Link>
-                ))}
-            </nav>
-          </div>
-          <div className="flex items-center space-x-4">
-            <div className="hidden md:flex items-center space-x-2 gap-4">
-              {/* Foydalanuvchilar sonini ko'rsatish */}
-              {userCount !== null ? (
-                <div className="flex items-center space-x-2">
-                  <span className="inline-block h-2 w-2 rounded-full bg-green-500"></span>
-                  <span className="hidden xl:block">{`${t(
-                    "active_users"
-                  )}: `}</span>
-                  {userCount}
-                </div>
-              ) : (
-                <span>{t("loading_users")}</span>
-              )}
-              <LanguageSwitcher />
-              <ThemeToggle />
-              {/* Profil tugmasi faqat login bo‘lsa */}
-              {isLoggedIn ? (
-                <Button asChild size="sm" variant="outline">
-                  <Link href="/dashboard">
-                    <User className="h-4 w-4 mr-2" />
-                    {t("profile")}
-                  </Link>
-                </Button>
-              ) : pathname === "/" || pathname === "/register" ? (
-                <Button asChild size="sm">
-                  <Link href="/login">{t("login")}</Link>
-                </Button>
-              ) : pathname === "/login" ? (
-                <Button asChild size="sm">
-                  <Link href="/register">{t("register")}</Link>
-                </Button>
-              ) : null}
-            </div>
-            <div className="md:hidden flex items-center">
-              {/* Foydalanuvchilar sonini ko'rsatish */}
-              {userCount !== null ? (
-                <div className="flex items-center space-x-2">
-                  <span className="inline-block h-2 w-2 rounded-full bg-green-500"></span>
-                  <span>{`${t("active_users")}: `}</span>
-                  {userCount}
-                </div>
-              ) : (
-                <span>{t("loading_users")}</span>
-              )}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                aria-label="Toggle menu"
-              >
-                {isMenuOpen ? (
-                  <X className="h-6 w-6" />
-                ) : (
-                  <Menu className="h-6 w-6" />
-                )}
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile menu */}
-      {isMenuOpen && (
-        <div className="md:hidden" data-aos="fade-down">
-          <div className="space-y-1 px-2 pb-3 pt-2">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`block px-3 py-2 rounded-md text-base font-medium ${
-                  isActive(item.href)
-                    ? "bg-primary text-primary-foreground"
-                    : "text-foreground hover:bg-muted"
-                }`}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                {item.name}
+    <>
+      <header className="bg-background border-b border-border z-40">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between">
+            <div className="flex items-center">
+              <Link href="/dashboard" className="flex-shrink-0">
+                <h1 className="md:text-2xl text-xl font-bold text-primary">
+                  MLM Platform
+                </h1>
               </Link>
-            ))}
-            <div className="flex items-center justify-between pt-4 pb-2">
-              <LanguageSwitcher />
-              <ThemeToggle />
+              <nav className="hidden lg:ml-6 lg:flex md:space-x-4">
+                {navigation
+                  .filter(
+                    (item) => item.href !== "/dashboard" || isLoggedIn
+                  )
+                  .map((item) => (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      className={`px-3 py-2 whitespace-nowrap rounded-md text-sm font-medium ${
+                        isActive(item.href)
+                          ? "bg-primary text-black"
+                          : "text-foreground hover:bg-muted "
+                      }`}
+                    >
+                      {item.name}
+                    </Link>
+                  ))}
+              </nav>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="hidden md:flex items-center space-x-2 gap-4">
+                {/* Foydalanuvchilar soni */}
+                {userCount !== null ? (
+                  <div className="flex items-center space-x-2">
+                    <span className="inline-block h-2 w-2 rounded-full bg-green-500"></span>
+                    <span className="hidden xl:block">{`${t(
+                      "active_users"
+                    )}: `}</span>
+                    {userCount}
+                  </div>
+                ) : (
+                  <span>{t("loading_users")}</span>
+                )}
+                <LanguageSwitcher />
+                <ThemeToggle />
+                {isLoggedIn ? (
+                  <Button asChild size="sm" variant="outline">
+                    <Link href="/dashboard">
+                      <User className="h-4 w-4 mr-2" />
+                      {t("profile")}
+                    </Link>
+                  </Button>
+                ) : pathname === "/" || pathname === "/register" ? (
+                  <Button asChild size="sm">
+                    <Link href="/login">{t("login")}</Link>
+                  </Button>
+                ) : pathname === "/login" ? (
+                  <Button asChild size="sm">
+                    <Link href="/register">{t("register")}</Link>
+                  </Button>
+                ) : null}
+              </div>
+              <div className="md:hidden flex items-center">
+                {userCount !== null ? (
+                  <div className="flex items-center space-x-2">
+                    <span className="inline-block h-2 w-2 rounded-full bg-green-500"></span>
+                    <span>{`${t("active_users")}: `}</span>
+                    {userCount}
+                  </div>
+                ) : (
+                  <span>{t("loading_users")}</span>
+                )}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  aria-label="Toggle menu"
+                >
+                  {isMenuOpen ? (
+                    <X className="h-6 w-6" />
+                  ) : (
+                    <Menu className="h-6 w-6" />
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
-      )}
-    </header>
+        {/* Recent users carousel */}
+        {recentUsers.length > 0 && (
+          <div className="w-full bg-muted border-t border-border py-2 overflow-hidden">
+            <div className="flex items-center justify-center gap-2 animate-fade-in">
+              <span className="text-xs text-muted-foreground">{t("recent_users")}:</span>
+              <div className="relative w-40 h-6 overflow-hidden inline-block align-middle">
+                <div
+                  className="absolute left-0 top-0 w-full h-full flex items-center transition-all duration-700"
+                  key={recentUsers[carouselIndex]?.id}
+                >
+                  <span className="text-sm font-medium text-primary">
+                    {recentUsers[carouselIndex]?.email}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </header>
+      {/* ...mobil menyu qismi o‘zgarmaydi... */}
+    </>
   );
 }

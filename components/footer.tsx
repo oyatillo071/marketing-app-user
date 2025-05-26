@@ -14,7 +14,7 @@ export default function Footer() {
   const { t } = useLanguage();
 
   return (
-    <footer className="bg-background border-t border-border">
+    <footer className="bg-background border-t border-border z-40">
       <div className="container mx-auto px-4 py-8 md:py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>

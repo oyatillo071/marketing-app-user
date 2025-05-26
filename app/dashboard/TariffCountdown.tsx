@@ -1,3 +1,5 @@
+"use client";
+import { useLanguage } from "@/components/language-provider";
 import { useEffect, useState } from "react";
 
 export function TariffCountdown({
@@ -7,16 +9,17 @@ export function TariffCountdown({
   startDate: string | Date;
   endDate: string | Date;
 }) {
-  const [remaining, setRemaining] = useState(
-    new Date(endDate).getTime() - Date.now()
-  );
+  const [remaining, setRemaining] = useState<number | null>(null);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setRemaining(new Date(endDate).getTime() - Date.now());
-    }, 1000);
+    const update = () => setRemaining(new Date(endDate).getTime() - Date.now());
+    update();
+    const interval = setInterval(update, 1000);
     return () => clearInterval(interval);
   }, [endDate]);
+
+  // Faqat clientda hisoblash, SSRda null bo'ladi
+  if (remaining === null) return null;
 
   if (remaining <= 0) {
     return (

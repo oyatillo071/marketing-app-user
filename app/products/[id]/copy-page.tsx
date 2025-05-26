@@ -158,6 +158,7 @@ export default function ProductDetailPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
         <div data-aos="fade-right">
+
           <div className="relative aspect-square overflow-hidden rounded-lg mb-4" style={{ minHeight: 200 }}>
             <Image
               src={images[activeImageIndex] || "/placeholder.svg"}

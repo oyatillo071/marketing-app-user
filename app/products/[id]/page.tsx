@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ShoppingCart, Star, ChevronRight, Heart } from "lucide-react";
+import { ShoppingCart, Star, ChevronRight, Heart, X, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -34,7 +34,7 @@ type Product = {
   id: number;
   rating: number;
   rewiev: number;
-  photo_url: string[];
+  photo_url: { photo_url: string }[]; // to'g'ri!
   translations: ProductTranslation[];
   prices: ProductPrice[];
 };
@@ -51,6 +51,12 @@ export default function ProductDetailPage() {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalImageIndex, setModalImageIndex] = useState(0);
+
+  // Zoom uchun state
+  const [zoomed, setZoomed] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
 
   // Helper: get translation by language, fallback to 'en' or first
   const getTranslation = (translations: ProductTranslation[]) => {
@@ -108,6 +114,40 @@ export default function ProductDetailPage() {
     });
   };
 
+  // Modal ochish
+  const openModal = (idx: number) => {
+    setModalImageIndex(idx);
+    setModalOpen(true);
+    setZoomed(false);
+  };
+
+  // Modal yopish (modal foniga yoki tepa qismini bosganda)
+  const closeModal = () => {
+    setModalOpen(false);
+    setZoomed(false);
+  };
+
+  // Modalda rasmga bosganda zoom
+  const handleImageClick = () => setZoomed((z) => !z);
+
+  // Keyingi rasm
+  const nextImage = () => {
+    setModalImageIndex((prev) =>
+      product && product.photo_url.length > 0
+        ? (prev + 1) % product.photo_url.length
+        : 0
+    );
+  };
+
+  // Oldingi rasm
+  const prevImage = () => {
+    setModalImageIndex((prev) =>
+      product && product.photo_url.length > 0
+        ? (prev - 1 + product.photo_url.length) % product.photo_url.length
+        : 0
+    );
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto p-4 md:p-8 flex justify-center items-center min-h-[60vh]">
@@ -147,27 +187,36 @@ export default function ProductDetailPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
         <div data-aos="fade-right">
           <div className="relative aspect-square overflow-hidden rounded-lg mb-4">
+            {/* Asosiy rasm */}
             <Image
-              src={product.photo_url[activeImageIndex] || "/placeholder.svg"}
-              alt={translation.name}
+              src={
+                Array.isArray(product.photo_url) &&
+                product.photo_url[activeImageIndex]?.photo_url
+                  ? product.photo_url[activeImageIndex].photo_url
+                  : "/placeholder.svg"
+              }
+              alt={translation.name || "img"}
               fill
-              className="object-cover"
+              className="object-cover cursor-zoom-in"
+              onClick={() => openModal(activeImageIndex)}
             />
           </div>
           <div className="grid grid-cols-4 gap-2">
-            {(product.photo_url.length > 0 ? product.photo_url : ["/placeholder.svg"]).map(
-              (image: string, index: number) => (
+            {/* Thumbnaillar */}
+            {(product.photo_url.length > 0 ? product.photo_url : [{ photo_url: "/placeholder.svg" }]).map(
+              (imageObj, index) => (
                 <div
                   key={index}
                   className={`relative aspect-square rounded-md overflow-hidden cursor-pointer border-2 ${
-                    activeImageIndex === index
-                      ? "border-primary"
-                      : "border-transparent"
+                    activeImageIndex === index ? "border-primary" : "border-transparent"
                   }`}
-                  onClick={() => setActiveImageIndex(index)}
+                  onClick={() => {
+                    setActiveImageIndex(index);
+                    openModal(index);
+                  }}
                 >
                   <Image
-                    src={image || "/placeholder.svg"}
+                    src={imageObj.photo_url ? imageObj.photo_url : "/placeholder.svg"}
                     alt={`${translation.name} thumbnail ${index + 1}`}
                     fill
                     className="object-cover"
@@ -268,6 +317,74 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
+      {/* Modal */}
+      {modalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+          onClick={closeModal}
+        >
+          <div
+            className="relative max-w-2xl w-full flex flex-col items-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal tepa qismi (yopish uchun) */}
+            <div
+              className="w-full h-12 flex items-center justify-end px-2 bg-gradient-to-b from-black/30 to-transparent absolute top-0 left-0 z-20 cursor-pointer"
+              onClick={closeModal}
+            >
+              <X className="h-6 w-6 text-white" />
+            </div>
+            {/* Chap/O'ng tugmalar */}
+            <button
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 rounded-full p-2 hover:bg-white z-10"
+              onClick={prevImage}
+              tabIndex={-1}
+            >
+              <ChevronLeft className="h-6 w-6 text-black" />
+            </button>
+            <button
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 rounded-full p-2 hover:bg-white z-10"
+              onClick={nextImage}
+              tabIndex={-1}
+            >
+              <ChevronRight className="h-6 w-6 text-black" />
+            </button>
+            {/* Rasm */}
+            <div className="relative w-[90vw]  max-w-2xl aspect-square bg-transparent rounded-xl overflow-hidden flex items-center justify-center">
+              <img
+                ref={imgRef}
+                src={
+                  product.photo_url[modalImageIndex]?.photo_url
+                    ? product.photo_url[modalImageIndex].photo_url
+                    : "/placeholder.svg"
+                }
+                alt={translation.name || "img"}
+                className={`object-contain w-full h-full transition-transform duration-300 cursor-zoom-in ${
+                  zoomed ? "scale-150 cursor-zoom-out" : ""
+                }`}
+                style={{
+                  touchAction: "pan-x pan-y",
+                  maxHeight: "80vh",
+                  maxWidth: "100vw",
+                }}
+                onClick={handleImageClick}
+                draggable={false}
+              />
+            </div>
+            {/* Zoom uchun ko‘rsatma */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs text-white/80 bg-black/40 px-3 py-1 rounded-full pointer-events-none select-none">
+              {zoomed
+                ? t
+                  ? t("tapToExitZoom")
+                  : "Tap again to exit zoom"
+                : t
+                  ? t("tapToZoom")
+                  : "Tap to zoom"}
+            </div>
+          </div>
+        </div>
+      )}
+
       {relatedProducts.length > 0 && (
         <div className="mb-12">
           <h2 className="text-2xl font-bold mb-6">{t ? t("relatedProducts") : "Related products"}</h2>
@@ -282,8 +399,13 @@ export default function ProductDetailPage() {
                   data-aos="fade-up"
                 >
                   <div className="relative h-64">
+                    {/* Related products uchun: */}
                     <Image
-                      src={relatedProduct.photo_url[0] || "/placeholder.svg"}
+                      src={
+                        relatedProduct.photo_url[0]?.photo_url
+                          ? relatedProduct.photo_url[0].photo_url
+                          : "/placeholder.svg"
+                      }
                       alt={relTranslation.name}
                       fill
                       className="object-cover transition-transform hover:scale-105"

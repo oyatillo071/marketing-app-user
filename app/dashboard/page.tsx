@@ -183,7 +183,7 @@ export default function ProfilePage() {
   const [email, setEmail] = useState(mockUserData.email);
   const [phone, setPhone] = useState(mockUserData.phone);
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState("profile");
+  const [activeTab, setActiveTab] = useState("referrals");
   const [showPaymentTimer, setShowPaymentTimer] = useState(false);
   const [showCardNumber, setShowCardNumber] = useState(false);
   const [showUploadTimer, setShowUploadTimer] = useState(false);
@@ -207,6 +207,7 @@ export default function ProfilePage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+
 
   const handleSaveProfile = () => {
     toast("Your profile information has been updated");
@@ -310,19 +311,13 @@ export default function ProfilePage() {
           </h1>
 
           <Tabs
-            defaultValue="profile"
+            defaultValue="referrals"
             value={activeTab}
             onValueChange={setActiveTab}
             className="space-y-6"
           >
             <TabsList className="grid grid-cols-2 md:grid-cols-6 gap-2 md:h-12 h-48 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-              <TabsTrigger
-                value="profile"
-                data-aos="fade-up"
-                data-aos-delay="100"
-              >
-                {t("profile")}
-              </TabsTrigger>
+              
               <TabsTrigger
                 value="earnings"
                 data-aos="fade-up"
@@ -330,6 +325,7 @@ export default function ProfilePage() {
               >
                 {t("earnings")}
               </TabsTrigger>
+              
               <TabsTrigger
                 value="referrals"
                 data-aos="fade-up"
@@ -337,6 +333,7 @@ export default function ProfilePage() {
               >
                 {t("referrals")}
               </TabsTrigger>
+              
               <TabsTrigger
                 value="withdrawal"
                 data-aos="fade-up"
@@ -345,6 +342,15 @@ export default function ProfilePage() {
                 {t("withdrawal")}
               </TabsTrigger>
               {/* Statistika bo‘limi olib tashlandi */}
+              
+              <TabsTrigger
+                value="profile"
+                data-aos="fade-up"
+                data-aos-delay="100"
+              >
+                {t("profile")}
+              </TabsTrigger>
+
               <TabsTrigger
                 value="settings"
                 data-aos="fade-up"
@@ -360,6 +366,112 @@ export default function ProfilePage() {
                 Yordam
               </TabsTrigger>
             </TabsList>
+
+
+            <TabsContent value="referrals" className="space-y-8">
+              <Card
+                data-aos="fade-up"
+                className="bg-white dark:bg-[#111827] shadow-lg"
+              >
+                <CardHeader>
+                  <CardTitle className="text-black dark:text-white">
+                    {t("referrals")}
+                  </CardTitle>
+                  <CardDescription className="text-gray-600 dark:text-gray-300">
+                    {t("invitedFriends")}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <Card
+                      data-aos="fade-up"
+                      data-aos-delay="100"
+                      className="bg-white dark:bg-[#1a2635] shadow-md"
+                    >
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium text-black dark:text-white">
+                          {t("totalReferrals")}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-3xl font-bold text-[#00FF99]">
+                          {mockUserData.referrals.length}
+                        </p>
+                      </CardContent>
+                    </Card>
+                    <Card
+                      data-aos="fade-up"
+                      data-aos-delay="200"
+                      className="bg-white dark:bg-[#1a2635] shadow-md"
+                    >
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium text-black dark:text-white">
+                          {t("activeReferrals")}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-3xl font-bold text-[#00FF99]">
+                          {
+                            mockUserData.referrals.filter(
+                              (r) => r.status === "paid"
+                            ).length
+                          }
+                        </p>
+                      </CardContent>
+                    </Card>
+                    <Card
+                      data-aos="fade-up"
+                      data-aos-delay="300"
+                      className="bg-white dark:bg-[#1a2635] shadow-md"
+                    >
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium text-black dark:text-white">
+                          {t("referralEarnings")}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-3xl font-bold text-[#00FF99]">
+                          {formatCurrency(1240, currency)}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  <div className="space-y-4">
+                    {mockUserData.referrals.map((referral) => (
+                      <div
+                        key={referral.id}
+                        className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-4 last:border-0 last:pb-0"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Users className="h-8 w-8 text-[#00FF99]" />
+                          <div>
+                            <p className="font-medium text-black dark:text-white">
+                              {referral.name}
+                            </p>
+                            <p className="text-sm text-gray-600 dark:text-gray-300">
+                              {new Date(referral.date).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                        <div
+                          className={`px-2 py-1 rounded-full text-xs ${
+                            referral.status === "paid"
+                              ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
+                              : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100"
+                          }`}
+                        >
+                          {t(referral.status)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <ReferralShare />
+                </CardFooter>
+              </Card>
+            </TabsContent>
 
             <TabsContent value="profile" className="space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -521,110 +633,6 @@ export default function ProfilePage() {
               <EarningsChart />
             </TabsContent>
 
-            <TabsContent value="referrals" className="space-y-8">
-              <Card
-                data-aos="fade-up"
-                className="bg-white dark:bg-[#111827] shadow-lg"
-              >
-                <CardHeader>
-                  <CardTitle className="text-black dark:text-white">
-                    {t("referrals")}
-                  </CardTitle>
-                  <CardDescription className="text-gray-600 dark:text-gray-300">
-                    {t("invitedFriends")}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <Card
-                      data-aos="fade-up"
-                      data-aos-delay="100"
-                      className="bg-white dark:bg-[#1a2635] shadow-md"
-                    >
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-black dark:text-white">
-                          {t("totalReferrals")}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-3xl font-bold text-[#00FF99]">
-                          {mockUserData.referrals.length}
-                        </p>
-                      </CardContent>
-                    </Card>
-                    <Card
-                      data-aos="fade-up"
-                      data-aos-delay="200"
-                      className="bg-white dark:bg-[#1a2635] shadow-md"
-                    >
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-black dark:text-white">
-                          {t("activeReferrals")}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-3xl font-bold text-[#00FF99]">
-                          {
-                            mockUserData.referrals.filter(
-                              (r) => r.status === "paid"
-                            ).length
-                          }
-                        </p>
-                      </CardContent>
-                    </Card>
-                    <Card
-                      data-aos="fade-up"
-                      data-aos-delay="300"
-                      className="bg-white dark:bg-[#1a2635] shadow-md"
-                    >
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-black dark:text-white">
-                          {t("referralEarnings")}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-3xl font-bold text-[#00FF99]">
-                          {formatCurrency(1240, currency)}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  <div className="space-y-4">
-                    {mockUserData.referrals.map((referral) => (
-                      <div
-                        key={referral.id}
-                        className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-4 last:border-0 last:pb-0"
-                      >
-                        <div className="flex items-center gap-3">
-                          <Users className="h-8 w-8 text-[#00FF99]" />
-                          <div>
-                            <p className="font-medium text-black dark:text-white">
-                              {referral.name}
-                            </p>
-                            <p className="text-sm text-gray-600 dark:text-gray-300">
-                              {new Date(referral.date).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                        <div
-                          className={`px-2 py-1 rounded-full text-xs ${
-                            referral.status === "paid"
-                              ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
-                              : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100"
-                          }`}
-                        >
-                          {t(referral.status)}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <ReferralShare />
-                </CardFooter>
-              </Card>
-            </TabsContent>
 
             <TabsContent value="withdrawal" className="space-y-8">
               <WithdrawalTab />
@@ -841,7 +849,6 @@ export default function ProfilePage() {
 
 function WithdrawalTab() {
   const { t, currency } = useLanguage();
-  const { toast } = useToast();
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
   const [amount, setAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -883,33 +890,23 @@ function WithdrawalTab() {
     e.preventDefault();
 
     if (!selectedCard || !amount) {
-      toast({
-        title: "Error",
-        description: "Please select a card and enter an amount",
-        variant: "destructive",
-      });
+      toast.error("Please select a card and enter an amount");
       return;
     }
 
     const amountValue = Number.parseFloat(amount);
     if (isNaN(amountValue) || amountValue < mockWithdrawalData.minimumAmount) {
-      toast({
-        title: "Error",
-        description: `Minimum withdrawal amount is ${formatCurrency(
+      toast.error(
+        `Minimum withdrawal amount is ${formatCurrency(
           mockWithdrawalData.minimumAmount,
           currency
-        )}`,
-        variant: "destructive",
-      });
+        )}`
+      );
       return;
     }
 
     if (amountValue > mockWithdrawalData.balance) {
-      toast({
-        title: "Error",
-        description: "Insufficient balance",
-        variant: "destructive",
-      });
+      toast.error("Insufficient balance");
       return;
     }
 
@@ -917,10 +914,7 @@ function WithdrawalTab() {
 
     setTimeout(() => {
       setIsLoading(false);
-      toast({
-        title: "Withdrawal Request Submitted",
-        description: t("withdrawalPendingApproval"),
-      });
+      toast.success("Withdrawal Request Submitted");
       setAmount("");
     }, 1500);
   };
@@ -971,7 +965,7 @@ function WithdrawalTab() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleWithdrawal} className="space-y-6">
-              <div className="space-y-2">
+              <div className="space-y-2">                           
                 <Label className="text-black dark:text-white">
                   {t("selectCard")}
                 </Label>

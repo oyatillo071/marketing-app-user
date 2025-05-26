@@ -110,8 +110,8 @@ export function EarningsChart() {
           </Button>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="h-[300px]">
+      <CardContent className="w-full">
+        <div className="h-[600px] w-full">
           <Line data={data} options={options} />
         </div>
         <div className="mt-4 text-center">
