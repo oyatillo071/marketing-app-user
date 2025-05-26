@@ -351,7 +351,7 @@ export default function ProductDetailPage() {
             </button>
             {/* Rasm */}
             <div className="relative w-[90vw]  max-w-2xl aspect-square bg-transparent rounded-xl overflow-hidden flex items-center justify-center">
-              <img
+              <Image
                 ref={imgRef}
                 src={
                   product.photo_url[modalImageIndex]?.photo_url
