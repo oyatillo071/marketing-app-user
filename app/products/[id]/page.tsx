@@ -56,7 +56,10 @@ export default function ProductDetailPage() {
 
   // Zoom uchun state
   const [zoomed, setZoomed] = useState(false);
-  const imgRef = useRef<HTMLImageElement>(null);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [dragging, setDragging] = useState(false);
+  const dragStart = useRef({ x: 0, y: 0 });
+  const panStart = useRef({ x: 0, y: 0 });
 
   // Helper: get translation by language, fallback to 'en' or first
   const getTranslation = (translations: ProductTranslation[]) => {
@@ -127,23 +130,66 @@ export default function ProductDetailPage() {
     setZoomed(false);
   };
 
-  // Modalda rasmga bosganda zoom
-  const handleImageClick = () => setZoomed((z) => !z);
-
-  // Keyingi rasm
-  const nextImage = () => {
-    setModalImageIndex((prev) =>
-      product && product.photo_url.length > 0
-        ? (prev + 1) % product.photo_url.length
-        : 0
-    );
+  // Zoom uchun rasmga bosganda
+  const handleImageClick = () => {
+    setZoomed((z) => {
+      if (z) setPan({ x: 0, y: 0 }); // Zoomdan chiqishda pan reset
+      return !z;
+    });
   };
 
-  // Oldingi rasm
+  // Mouse/touch pan funksiyalari
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!zoomed) return;
+    setDragging(true);
+    dragStart.current = { x: e.clientX, y: e.clientY };
+    panStart.current = { ...pan };
+  };
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!zoomed || !dragging) return;
+    const dx = e.clientX - dragStart.current.x;
+    const dy = e.clientY - dragStart.current.y;
+    setPan({
+      x: panStart.current.x + dx,
+      y: panStart.current.y + dy,
+    });
+  };
+  const handleMouseUp = () => setDragging(false);
+
+  // Touch uchun
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (!zoomed) return;
+    setDragging(true);
+    dragStart.current = {
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY,
+    };
+    panStart.current = { ...pan };
+  };
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!zoomed || !dragging) return;
+    const dx = e.touches[0].clientX - dragStart.current.x;
+    const dy = e.touches[0].clientY - dragStart.current.y;
+    setPan({
+      x: panStart.current.x + dx,
+      y: panStart.current.y + dy,
+    });
+  };
+  const handleTouchEnd = () => setDragging(false);
+
+  // Modalda chap/o'ng rasmga o'tish
   const prevImage = () => {
     setModalImageIndex((prev) =>
       product && product.photo_url.length > 0
         ? (prev - 1 + product.photo_url.length) % product.photo_url.length
+        : 0
+    );
+  };
+
+  const nextImage = () => {
+    setModalImageIndex((prev) =>
+      product && product.photo_url.length > 0
+        ? (prev + 1) % product.photo_url.length
         : 0
     );
   };
@@ -350,9 +396,11 @@ export default function ProductDetailPage() {
               <ChevronRight className="h-6 w-6 text-black" />
             </button>
             {/* Rasm */}
-            <div className="relative w-[90vw]  max-w-2xl aspect-square bg-transparent rounded-xl overflow-hidden flex items-center justify-center">
+            <div
+              className="relative w-[90vw] h-[90vw] max-w-3xl max-h-[90vh] bg-transparent rounded-xl overflow-hidden flex items-center justify-center"
+            >
               <Image
-                ref={imgRef}
+                fill
                 src={
                   product.photo_url[modalImageIndex]?.photo_url
                     ? product.photo_url[modalImageIndex].photo_url
@@ -363,9 +411,8 @@ export default function ProductDetailPage() {
                   zoomed ? "scale-150 cursor-zoom-out" : ""
                 }`}
                 style={{
-                  touchAction: "pan-x pan-y",
-                  maxHeight: "80vh",
-                  maxWidth: "100vw",
+                  touchAction: "none",
+                  userSelect: "none",
                 }}
                 onClick={handleImageClick}
                 draggable={false}
@@ -376,7 +423,7 @@ export default function ProductDetailPage() {
               {zoomed
                 ? t
                   ? t("tapToExitZoom")
-                  : "Tap again to exit zoom"
+                  : "Drag to move, tap again to exit zoom"
                 : t
                   ? t("tapToZoom")
                   : "Tap to zoom"}

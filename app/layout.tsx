@@ -11,6 +11,7 @@ import { Toaster } from "@/components/ui/toaster";
 import AOS from "@/components/aos-provider";
 import { SaveUserToLocalStorage } from "../components/SaveUserToLocalStorage";
 import SessionProviderWrapper from "@/components/SessionProviderWrapper";
+import Providers from "@/hooks/provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -34,12 +35,14 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <SessionProviderWrapper>
+            <Providers>
+
           <ThemeProvider
             attribute="class"
             defaultTheme="light"
             enableSystem
             disableTransitionOnChange
-          >
+            >
             <LanguageProvider>
               <AOS>
                 <Toaster />
@@ -52,6 +55,7 @@ export default function RootLayout({
               </AOS>
             </LanguageProvider>
           </ThemeProvider>
+            </Providers>
         </SessionProviderWrapper>
       </body>
     </html>

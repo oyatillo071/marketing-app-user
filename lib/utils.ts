@@ -1,4 +1,5 @@
 import { type ClassValue, clsx } from "clsx";
+import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -22,7 +23,7 @@ export function formatCurrency(amountUZS: number, currency: string) {
   const currencyInfo = currencyMap[currency];
 
   if (!currencyInfo) {
-    throw new Error(`Unsupported currency: ${currency}`);
+    toast.error(`Unsupported currency: ${currency}`);
   }
 
   const { symbol, rate, decimals, space = false } = currencyInfo;

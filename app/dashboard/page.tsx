@@ -49,6 +49,7 @@ import { formatCurrency } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { Toaster, toast } from "sonner";
 import { TariffCountdown } from "./TariffCountdown";
+import { BalanceTab } from "./BalanceTab";
 
 // Mock data
 const mockUserData = {
@@ -208,7 +209,6 @@ export default function ProfilePage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
-
   const handleSaveProfile = () => {
     toast("Your profile information has been updated");
     setIsEditing(false);
@@ -333,7 +333,7 @@ export default function ProfilePage() {
               >
                 {t("referrals")}
               </TabsTrigger>
-              
+{/*               
               <TabsTrigger
                 value="withdrawal"
                 data-aos="fade-up"
@@ -341,7 +341,14 @@ export default function ProfilePage() {
               >
                 {t("withdrawal")}
               </TabsTrigger>
-              {/* Statistika bo‘limi olib tashlandi */}
+               */}
+              <TabsTrigger
+                value="balance"
+                data-aos="fade-up"
+                data-aos-delay="450"
+              >
+                Balans
+              </TabsTrigger>
               
               <TabsTrigger
                 value="profile"
@@ -633,9 +640,17 @@ export default function ProfilePage() {
               <EarningsChart />
             </TabsContent>
 
-
+{/* 
             <TabsContent value="withdrawal" className="space-y-8">
               <WithdrawalTab />
+            </TabsContent> */}
+
+            <TabsContent value="balance" className="space-y-8">
+              <BalanceTab
+                userId={mockUserData.id}
+                currency={currency}
+                balance={1500} // yoki kerakli balans qiymati
+              />
             </TabsContent>
 
             <TabsContent value="settings" className="space-y-6">
