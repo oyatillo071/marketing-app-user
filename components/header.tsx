@@ -111,6 +111,16 @@ export default function Header() {
   // Recent users massivini olish
   const recentUsers = statistics[statIndex]?.recentUsers ?? [];
 
+  const maskEmail = (email: string) => {
+    const [name, domain] = email.split("@");
+    if (!domain) return "***";
+    if (name.length <= 4) return "***@" + domain;
+    const first = name.slice(0, 2);
+    const last = name.slice(-2);
+    const middle = "*".repeat(name.length - 4);
+    return `${first}${middle}${last}@${domain}`;
+  };
+
   return (
     <>
       <header className="bg-background border-b border-border z-40">
@@ -203,24 +213,79 @@ export default function Header() {
         </div>
         {/* Recent users carousel */}
         {recentUsers.length > 0 && (
-          <div className="w-full bg-muted border-t border-border py-2 overflow-hidden">
-            <div className="flex items-center justify-center gap-2 animate-fade-in">
-              <span className="text-xs text-muted-foreground">{t("recent_users")}:</span>
-              <div className="relative w-40 h-6 overflow-hidden inline-block align-middle">
-                <div
-                  className="absolute left-0 top-0 w-full h-full flex items-center transition-all duration-700"
-                  key={recentUsers[carouselIndex]?.id}
-                >
-                  <span className="text-sm font-medium text-primary">
-                    {recentUsers[carouselIndex]?.email}
-                  </span>
+          <div className="w-full bg-muted border-t border-border py-1 overflow-hidden">
+            <div className="flex items-center justify-between relative gap-2">
+              <span className="text-base absolute backdrop-blur-lg p-3 z-20  text-muted-foreground">
+                {t("recent_users")}:
+              </span>
+              <div className="w-full h-6 overflow-hidden relative">
+                <div className="flex animate-scroll-left whitespace-nowrap min-w-full">
+                  {[...recentUsers, ...recentUsers].map((user, idx) => {
+                    const maskedEmail = maskEmail(user.email);
+                    const randomAmount = (Math.random() * 900 + 100).toFixed(2);
+                    const currencies = ["USD", "EUR", "UZS", "KZT", "RUB", "TRY"];
+                    const currency =
+                      statistics[statIndex]?.statEarnings?.[idx % recentUsers.length]?.currency ??
+                      currencies[Math.floor(Math.random() * currencies.length)];
+                    const amount =
+                      statistics[statIndex]?.statEarnings?.[idx % recentUsers.length]?.amount ?? randomAmount;
+
+                    return (
+                      <span
+                        key={user.id + "-" + idx}
+                        className="text-sm font-medium text-primary mx-4 flex-shrink-0"
+                      >
+                        {maskedEmail} - {amount} {currency}
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
             </div>
           </div>
         )}
       </header>
-      {/* ...mobil menyu qismi o‘zgarmaydi... */}
+      {/* Mobil menyu qismi */}
+      {isMenuOpen && (
+        <div className="md:hidden bg-background border-t border-border px-4 py-3 space-y-2 shadow-lg absolute left-0 right-0 top-16 z-50 animate-fade-in">
+          {navigation
+            .filter((item) => item.href !== "/dashboard" || isLoggedIn)
+            .map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={`block px-3 py-2 rounded-md text-base font-medium ${
+                  isActive(item.href)
+                    ? "bg-primary text-black"
+                    : "text-foreground hover:bg-muted"
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {item.name}
+              </Link>
+            ))}
+          <div className="flex items-center gap-2 mt-2">
+            <LanguageSwitcher />
+            <ThemeToggle />
+          </div>
+          {isLoggedIn ? (
+            <Button asChild size="sm" variant="outline" className="w-full mt-2">
+              <Link href="/dashboard" onClick={() => setIsMenuOpen(false)}>
+                <User className="h-4 w-4 mr-2" />
+                {t("profile")}
+              </Link>
+            </Button>
+          ) : pathname === "/" || pathname === "/register" ? (
+            <Button asChild size="sm" className="w-full mt-2">
+              <Link href="/login" onClick={() => setIsMenuOpen(false)}>{t("login")}</Link>
+            </Button>
+          ) : pathname === "/login" ? (
+            <Button asChild size="sm" className="w-full mt-2">
+              <Link href="/register" onClick={() => setIsMenuOpen(false)}>{t("register")}</Link>
+            </Button>
+          ) : null}
+        </div>
+      )}
     </>
   );
 }
