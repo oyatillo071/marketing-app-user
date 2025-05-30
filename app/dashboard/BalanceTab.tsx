@@ -112,6 +112,9 @@ export function BalanceTab({
     socketRef.current = io(WS_URL, {
       transports: ["websocket"],
       auth: { token: localStorage.getItem("mlm_token") },
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 2000,
     });
 
     // paymentResponse eventini tinglash
