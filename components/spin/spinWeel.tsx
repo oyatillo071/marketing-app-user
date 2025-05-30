@@ -5,6 +5,7 @@ import React, { useEffect, useRef, useState } from "react";
 type Prize = {
   name: string;
   color: string;
+  percent?: number;
 };
 
 type Props = {
@@ -24,14 +25,14 @@ const SpinWheel: React.FC<Props> = ({ prizes, onFinish, targetIndex }) => {
     if (spinning) return;
     setSpinning(true);
 
-    const totalSectors = prizes.length;
     const winnerIndex =
       typeof idx === "number"
         ? idx
         : typeof targetIndex === "number"
         ? targetIndex
-        : Math.floor(Math.random() * totalSectors);
+        : getRandomPrizeIndex(prizes); // <-- percent bo‘yicha tanlash
 
+    const totalSectors = prizes.length;
     const sectorAngle = 360 / totalSectors;
     const minSpins = 5;
     const targetAngle =
@@ -149,6 +150,16 @@ const SpinWheel: React.FC<Props> = ({ prizes, onFinish, targetIndex }) => {
           ref={canvasRef}
           className="w-full h-full rounded-full shadow-md"
         />
+ <div
+  className="absolute right-0 top-[48%] bg-red-600 shadow-lg"
+  style={{
+    width: "34px",   // узунлиги
+    height: "24px",  // баландлиги
+    clipPath: "polygon(0% 50%, 100% 0%, 100% 100%)",
+  }}
+/>
+
+  
       </div>
       {winner && (
         <div className="text-center text-lg font-semibold text-green-700">
@@ -165,5 +176,17 @@ const SpinWheel: React.FC<Props> = ({ prizes, onFinish, targetIndex }) => {
     </div>
   );
 };
+function getRandomPrizeIndex(prizes: { percent?: number }[]) {
+  const filtered = prizes.map(p => p.percent ?? 1);
+  const total = filtered.reduce((a, b) => a + b, 0);
+  let rand = Math.random() * total;
+  for (let i = 0; i < prizes.length; i++) {
+    if (filtered[i] === 0) continue; // percent 0 bo‘lsa, o‘tkazib yubor
+    if (rand < filtered[i]) return i;
+    rand -= filtered[i];
+  }
+  // fallback
+  return 0;
+}
 
 export default SpinWheel;
