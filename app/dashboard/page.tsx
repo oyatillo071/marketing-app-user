@@ -317,7 +317,7 @@ export default function ProfilePage() {
             onValueChange={setActiveTab}
             className="space-y-6"
           >
-            <TabsList className="grid grid-cols-2 md:grid-cols-6 gap-2 md:h-12 h-48 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+            <TabsList className="grid grid-cols-2 md:grid-cols-7 gap-2 md:h-12 h-48 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
               
               <TabsTrigger
                 value="earnings"
@@ -340,7 +340,7 @@ export default function ProfilePage() {
                 data-aos="fade-up"
                 data-aos-delay="400"
               >
-                {t("spinner")}
+                {t("daylyEarnings")}
               </TabsTrigger>
 
               <TabsTrigger
