@@ -10,7 +10,7 @@ export function TariffCountdown({
   endDate: string | Date;
 }) {
   const [remaining, setRemaining] = useState<number | null>(null);
-
+  const { t } = useLanguage();
   useEffect(() => {
     const update = () => setRemaining(new Date(endDate).getTime() - Date.now());
     update();
@@ -24,7 +24,7 @@ export function TariffCountdown({
   if (remaining <= 0) {
     return (
       <span className="text-red-500 font-semibold text-xs">
-        Tarif muddati tugadi
+        {t("Tarif muddati tugadi")}
       </span>
     );
   }

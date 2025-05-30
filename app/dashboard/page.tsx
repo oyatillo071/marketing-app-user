@@ -50,6 +50,7 @@ import { useRouter } from "next/navigation";
 import { Toaster, toast } from "sonner";
 import { TariffCountdown } from "./TariffCountdown";
 import { BalanceTab } from "./BalanceTab";
+import SpinPage from "../spin/page";
 
 // Mock data
 const mockUserData = {
@@ -333,15 +334,15 @@ export default function ProfilePage() {
               >
                 {t("referrals")}
               </TabsTrigger>
-{/*               
+    
               <TabsTrigger
-                value="withdrawal"
+                value="spinner"
                 data-aos="fade-up"
                 data-aos-delay="400"
               >
-                {t("withdrawal")}
+                {t("spinner")}
               </TabsTrigger>
-               */}
+
               <TabsTrigger
                 value="balance"
                 data-aos="fade-up"
@@ -638,6 +639,11 @@ export default function ProfilePage() {
 
             <TabsContent value="earnings" className="space-y-8">
               <EarningsChart />
+            </TabsContent>
+
+
+            <TabsContent value="spinner" className="space-y-8">
+              <SpinPage />
             </TabsContent>
 
 {/* 

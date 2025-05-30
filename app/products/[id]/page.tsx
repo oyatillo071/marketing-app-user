@@ -60,6 +60,7 @@ export default function ProductDetailPage() {
   const [dragging, setDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0 });
   const panStart = useRef({ x: 0, y: 0 });
+// TODO:fix response in this page
 
   // Helper: get translation by language, fallback to 'en' or first
   const getTranslation = (translations: ProductTranslation[]) => {
