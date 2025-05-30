@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Menu, User, X } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { Menu, User, X, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageSwitcher } from "@/components/language-switcher";
@@ -34,6 +34,7 @@ type Statistic = {
 export default function Header() {
   const { t } = useLanguage();
   const pathname = usePathname();
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [userCount, setUserCount] = useState<number | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -121,6 +122,13 @@ export default function Header() {
     return `${first}${middle}${last}@${domain}`;
   };
 
+  const handleLogout = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("mlm_user");
+      router.push("/login");
+    }
+  };
+
   return (
     <>
       <header className="bg-background border-b border-border z-40">
@@ -134,9 +142,7 @@ export default function Header() {
               </Link>
               <nav className="hidden lg:ml-6 lg:flex md:space-x-4">
                 {navigation
-                  .filter(
-                    (item) => item.href !== "/dashboard" || isLoggedIn
-                  )
+                  .filter((item) => item.href !== "/dashboard" || isLoggedIn)
                   .map((item) => (
                     <Link
                       key={item.name}
@@ -169,12 +175,23 @@ export default function Header() {
                 <LanguageSwitcher />
                 <ThemeToggle />
                 {isLoggedIn ? (
-                  <Button asChild size="sm" variant="outline">
-                    <Link href="/dashboard">
-                      <User className="h-4 w-4 mr-2" />
-                      {t("profile")}
-                    </Link>
-                  </Button>
+                  <>
+                    <Button asChild size="sm" variant="outline">
+                      <Link href="/dashboard">
+                        <User className="h-4 w-4 mr-2" />
+                        {t("profile")}
+                      </Link>
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="ml-2"
+                      onClick={handleLogout}
+                      title={t("logout")}
+                    >
+                      <LogOut className="h-4 w-4 mr-1" />
+                    </Button>
+                  </>
                 ) : pathname === "/" || pathname === "/register" ? (
                   <Button asChild size="sm">
                     <Link href="/login">{t("login")}</Link>
@@ -223,12 +240,23 @@ export default function Header() {
                   {[...recentUsers, ...recentUsers].map((user, idx) => {
                     const maskedEmail = maskEmail(user.email);
                     const randomAmount = (Math.random() * 900 + 100).toFixed(2);
-                    const currencies = ["USD", "EUR", "UZS", "KZT", "RUB", "TRY"];
+                    const currencies = [
+                      "USD",
+                      "EUR",
+                      "UZS",
+                      "KZT",
+                      "RUB",
+                      "TRY",
+                    ];
                     const currency =
-                      statistics[statIndex]?.statEarnings?.[idx % recentUsers.length]?.currency ??
+                      statistics[statIndex]?.statEarnings?.[
+                        idx % recentUsers.length
+                      ]?.currency ??
                       currencies[Math.floor(Math.random() * currencies.length)];
                     const amount =
-                      statistics[statIndex]?.statEarnings?.[idx % recentUsers.length]?.amount ?? randomAmount;
+                      statistics[statIndex]?.statEarnings?.[
+                        idx % recentUsers.length
+                      ]?.amount ?? randomAmount;
 
                     return (
                       <span
@@ -269,19 +297,39 @@ export default function Header() {
             <ThemeToggle />
           </div>
           {isLoggedIn ? (
-            <Button asChild size="sm" variant="outline" className="w-full mt-2">
-              <Link href="/dashboard" onClick={() => setIsMenuOpen(false)}>
-                <User className="h-4 w-4 mr-2" />
-                {t("profile")}
-              </Link>
-            </Button>
+            <div>
+              <Button
+                asChild
+                size="sm"
+                variant="outline"
+                className="w-full mt-2"
+              >
+                <Link href="/dashboard" onClick={() => setIsMenuOpen(false)}>
+                  <User className="h-4 w-4 mr-2" />
+                  {t("profile")}
+                </Link>
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="ml-2"
+                onClick={handleLogout}
+                title={t("logout")}
+              >
+                <LogOut className="h-4 w-4 mr-1" />
+              </Button>
+            </div>
           ) : pathname === "/" || pathname === "/register" ? (
             <Button asChild size="sm" className="w-full mt-2">
-              <Link href="/login" onClick={() => setIsMenuOpen(false)}>{t("login")}</Link>
+              <Link href="/login" onClick={() => setIsMenuOpen(false)}>
+                {t("login")}
+              </Link>
             </Button>
           ) : pathname === "/login" ? (
             <Button asChild size="sm" className="w-full mt-2">
-              <Link href="/register" onClick={() => setIsMenuOpen(false)}>{t("register")}</Link>
+              <Link href="/register" onClick={() => setIsMenuOpen(false)}>
+                {t("register")}
+              </Link>
             </Button>
           ) : null}
         </div>

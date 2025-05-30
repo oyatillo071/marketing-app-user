@@ -2,13 +2,26 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Upload } from "lucide-react";
 import io from "socket.io-client";
 import { API_CONFIG } from "@/constants/api";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 const WS_URL = API_CONFIG.wsUrl;
 
@@ -42,14 +55,21 @@ export function BalanceTab({
   const [amount, setAmount] = useState("");
   const [country, setCountry] = useState(COUNTRIES[0].code);
   const [cardType, setCardType] = useState(CARD_TYPES[0].type);
-  const [step, setStep] = useState<"form" | "wait_card" | "paying" | "done">("form");
-  const [adminCard, setAdminCard] = useState<{ number: string; bank: string } | null>(null);
+  const [step, setStep] = useState<"form" | "wait_card" | "paying" | "done">(
+    "form"
+  );
+  const [adminCard, setAdminCard] = useState<{
+    number: string;
+    bank: string;
+  } | null>(null);
   const [timer, setTimer] = useState(120);
   const [checkFile, setCheckFile] = useState<File | null>(null);
 
   // Yechish uchun
   const [withdrawAmount, setWithdrawAmount] = useState("");
-  const [withdrawStatus, setWithdrawStatus] = useState<"idle" | "waiting" | "approved" | "rejected">("idle");
+  const [withdrawStatus, setWithdrawStatus] = useState<
+    "idle" | "waiting" | "approved" | "rejected"
+  >("idle");
   const [withdrawCardNumber, setWithdrawCardNumber] = useState("");
   const [withdrawCardType, setWithdrawCardType] = useState(CARD_TYPES[0].type);
 
@@ -82,43 +102,50 @@ export function BalanceTab({
 
   const socketRef = useRef<any>(null);
 
+  // paymentResponse xabari uchun state
+  const [paymentResponseMsg, setPaymentResponseMsg] = useState<string | null>(
+    null
+  );
+
   // WebSocket ulanishi
   useEffect(() => {
-    socketRef.current = io(WS_URL, { transports: ["websocket"] });
-
-    socketRef.current.on("admin_card", (data: { number: string; bank: string }) => {
-      setAdminCard(data);
-      setStep("paying");
-      setTimer(120);
+    socketRef.current = io(WS_URL, {
+      transports: ["websocket"],
+      auth: { token: localStorage.getItem("mlm_token") },
     });
 
-    socketRef.current.on("deposit_result", (data: { status: string }) => {
-      if (data.status === "success") {
-        setStep("done");
-        toast.success("To‘ldirish muvaffaqiyatli!");
-      } else {
-        toast.error("To‘ldirishda xatolik!");
+    // paymentResponse eventini tinglash
+    socketRef.current.on("paymentResponse", (data: { message?: string }) => {
+      if (data?.message) {
+        setPaymentResponseMsg(data.message);
+        setStep("wait_card");
+        toast.info(data.message);
       }
     });
 
-    socketRef.current.on("withdraw_result", (data: { status: string; amount: number; card: string }) => {
-      setWithdrawStatus(data.status === "approved" ? "approved" : "rejected");
-      toast[data.status === "approved" ? "success" : "error"](
-        data.status === "approved"
-          ? "Pul yechish tasdiqlandi!"
-          : "Pul yechish rad etildi!"
-      );
-      setWithdrawHistory((prev) => [
-        {
-          id: prev.length + 1,
-          amount: data.amount,
-          status: data.status === "approved" ? "processed" : "pending",
-          date: new Date().toISOString(),
-          card: data.card,
-        },
-        ...prev,
-      ]);
-    });
+    // Admin karta yuboradi
+    socketRef.current.on(
+      "card_info",
+      (data: { cardNumber: string; message: string }) => {
+        setAdminCard({ number: data.cardNumber, bank: "Admin bank" });
+        setStep("paying");
+        setTimer(120);
+        toast.info(data.message);
+      }
+    );
+
+    // To‘lov natijasi
+    socketRef.current.on(
+      "payment_confirmed",
+      (data: { confirmed: boolean; message: string }) => {
+        if (data.confirmed) {
+          setStep("done");
+          toast.success(data.message || "To‘ldirish muvaffaqiyatli!");
+        } else {
+          toast.error(data.message || "To‘ldirishda xatolik!");
+        }
+      }
+    );
 
     return () => {
       socketRef.current.disconnect();
@@ -137,11 +164,9 @@ export function BalanceTab({
   const handleDepositRequest = (e: React.FormEvent) => {
     e.preventDefault();
     if (!amount || Number(amount) <= 0) return toast.error("Summani kiriting");
-    socketRef.current.emit("deposit_request", {
-      userId,
-      amount,
-      country,
-      cardType,
+    socketRef.current.emit("paymentRequest", {
+      currency,
+      how_much: amount,
     });
     setStep("wait_card");
   };
@@ -151,9 +176,8 @@ export function BalanceTab({
     if (!checkFile) return toast.error("Chekni yuklang");
     const reader = new FileReader();
     reader.onload = () => {
-      socketRef.current.emit("deposit_check", {
-        userId,
-        file: reader.result,
+      socketRef.current.emit("upload_screenshot", {
+        screenshotUrl: reader.result, // Faylni base64 ko‘rinishda yuboriladi
       });
       setStep("wait_card");
     };
@@ -195,30 +219,40 @@ export function BalanceTab({
       <Card className="bg-white dark:bg-[#111827] shadow-lg mb-6">
         <CardHeader>
           <CardTitle className="text-black dark:text-white">
-            Balans: <span className="text-primary">{balance} {currency}</span>
+            Balans:{" "}
+            <span className="text-primary">
+              {balance} {currency}
+            </span>
           </CardTitle>
           <CardDescription className="text-gray-600 dark:text-gray-300">
-            Pulingizni to‘ldirish yoki yechish uchun quyidagi tugmalardan foydalaning
+            Pulingizni to‘ldirish yoki yechish uchun quyidagi tugmalardan
+            foydalaning
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex gap-4">
-            <Button className="bg-[#00FF99] text-white hover:bg-[#00FF99]/90 flex-1" onClick={() => {
-              setOpenDeposit(true);
-              setStep("form");
-              setAmount("");
-              setAdminCard(null);
-              setCheckFile(null);
-            }}>
+            <Button
+              className="bg-[#00FF99] text-white hover:bg-[#00FF99]/90 flex-1"
+              onClick={() => {
+                setOpenDeposit(true);
+                setStep("form");
+                setAmount("");
+                setAdminCard(null);
+                setCheckFile(null);
+              }}
+            >
               Pul to‘ldirish
             </Button>
-            <Button className="bg-blue-500 text-white hover:bg-blue-600 flex-1" onClick={() => {
-              setOpenWithdraw(true);
-              setWithdrawAmount("");
-              setWithdrawCardNumber("");
-              setWithdrawCardType(CARD_TYPES[0].type);
-              setWithdrawStatus("idle");
-            }}>
+            <Button
+              className="bg-blue-500 text-white hover:bg-blue-600 flex-1"
+              onClick={() => {
+                setOpenWithdraw(true);
+                setWithdrawAmount("");
+                setWithdrawCardNumber("");
+                setWithdrawCardType(CARD_TYPES[0].type);
+                setWithdrawStatus("idle");
+              }}
+            >
               Pul yechish
             </Button>
           </div>
@@ -226,12 +260,32 @@ export function BalanceTab({
       </Card>
 
       {/* Pul to‘ldirish MODAL */}
-      <Dialog open={openDeposit} onOpenChange={setOpenDeposit}>
+      <Dialog
+        open={openDeposit}
+        onOpenChange={(open) => {
+          setOpenDeposit(open);
+          if (!open) {
+            setPaymentResponseMsg(null);
+            setStep("form");
+            setAmount("");
+            setAdminCard(null);
+            setCheckFile(null);
+          }
+        }}
+      >
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Pul to‘ldirish</DialogTitle>
-            <DialogDescription>Balansingizni to‘ldirish uchun so‘rov yuboring</DialogDescription>
+            <DialogDescription>
+              Balansingizni to‘ldirish uchun so‘rov yuboring
+            </DialogDescription>
           </DialogHeader>
+          {/* paymentResponse xabari */}
+          {paymentResponseMsg && (
+            <div className="mb-4 p-3 rounded bg-blue-50 text-blue-800 border border-blue-200 text-center">
+              {paymentResponseMsg}
+            </div>
+          )}
           {step === "form" && (
             <form onSubmit={handleDepositRequest} className="space-y-4">
               <Label>Summani kiriting</Label>
@@ -249,7 +303,9 @@ export function BalanceTab({
                 onChange={(e) => setCountry(e.target.value)}
               >
                 {COUNTRIES.map((c) => (
-                  <option key={c.code} value={c.code}>{c.name}</option>
+                  <option key={c.code} value={c.code}>
+                    {c.name}
+                  </option>
                 ))}
               </select>
               <Label>Karta turi</Label>
@@ -259,11 +315,16 @@ export function BalanceTab({
                 onChange={(e) => setCardType(e.target.value)}
               >
                 {CARD_TYPES.map((c) => (
-                  <option key={c.type} value={c.type}>{c.label}</option>
+                  <option key={c.type} value={c.type}>
+                    {c.label}
+                  </option>
                 ))}
               </select>
               <DialogFooter>
-                <Button type="submit" className="w-full bg-[#00FF99] text-white hover:bg-[#00FF99]/90">
+                <Button
+                  type="submit"
+                  className="w-full bg-[#00FF99] text-white hover:bg-[#00FF99]/90"
+                >
                   To‘ldirish so‘rovi
                 </Button>
               </DialogFooter>
@@ -278,24 +339,43 @@ export function BalanceTab({
           {step === "paying" && adminCard && (
             <div className="space-y-4">
               <div className="text-center">
-                <p className="font-bold">Kartaga {amount} {currency} o‘tkazing:</p>
-                <p className="text-lg">{adminCard.number} ({adminCard.bank})</p>
-                <p className="text-sm text-red-500">Chekni yuklash uchun {timer} soniya qoldi</p>
+                <p className="font-bold">
+                  Kartaga {amount} {currency} o‘tkazing:
+                </p>
+                <p className="text-lg">
+                  {adminCard.number} ({adminCard.bank})
+                </p>
+                <p className="text-sm text-red-500">
+                  Chekni yuklash uchun {timer} soniya qoldi
+                </p>
               </div>
               <Input
                 type="file"
                 accept="image/*"
                 onChange={(e) => setCheckFile(e.target.files?.[0] || null)}
               />
-              <Button onClick={handleCheckUpload} className="w-full flex gap-2 bg-[#00FF99] text-white hover:bg-[#00FF99]/90">
+              <Button
+                onClick={handleCheckUpload}
+                className="w-full flex gap-2 bg-[#00FF99] text-white hover:bg-[#00FF99]/90"
+              >
                 <Upload className="w-4 h-4" /> Chekni yuborish
               </Button>
             </div>
           )}
           {step === "done" && (
             <div className="text-center py-8">
-              <p className="text-green-600 font-bold">To‘ldirish muvaffaqiyatli!</p>
-              <Button onClick={() => { setStep("form"); setAmount(""); setAdminCard(null); setOpenDeposit(false); }} className="bg-[#00FF99] text-white hover:bg-[#00FF99]/90">
+              <p className="text-green-600 font-bold">
+                To‘ldirish muvaffaqiyatli!
+              </p>
+              <Button
+                onClick={() => {
+                  setStep("form");
+                  setAmount("");
+                  setAdminCard(null);
+                  setOpenDeposit(false);
+                }}
+                className="bg-[#00FF99] text-white hover:bg-[#00FF99]/90"
+              >
                 Yopish
               </Button>
             </div>
@@ -308,7 +388,9 @@ export function BalanceTab({
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Pul yechish</DialogTitle>
-            <DialogDescription>Balansdan pul yechish uchun so‘rov yuboring</DialogDescription>
+            <DialogDescription>
+              Balansdan pul yechish uchun so‘rov yuboring
+            </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleWithdraw} className="space-y-4">
             <Label>Summani kiriting</Label>
@@ -324,7 +406,9 @@ export function BalanceTab({
             <Input
               type="text"
               value={withdrawCardNumber}
-              onChange={(e) => setWithdrawCardNumber(e.target.value.replace(/\D/g, ""))}
+              onChange={(e) =>
+                setWithdrawCardNumber(e.target.value.replace(/\D/g, ""))
+              }
               maxLength={19}
               placeholder="XXXX XXXX XXXX XXXX"
               required
@@ -336,12 +420,20 @@ export function BalanceTab({
               onChange={(e) => setWithdrawCardType(e.target.value)}
             >
               {CARD_TYPES.map((c) => (
-                <option key={c.type} value={c.type}>{c.label}</option>
+                <option key={c.type} value={c.type}>
+                  {c.label}
+                </option>
               ))}
             </select>
             <DialogFooter>
-              <Button type="submit" className="w-full bg-blue-500 text-white hover:bg-blue-600" disabled={withdrawStatus === "waiting"}>
-                {withdrawStatus === "waiting" ? "So‘rov yuborildi..." : "Yechish so‘rovi"}
+              <Button
+                type="submit"
+                className="w-full bg-blue-500 text-white hover:bg-blue-600"
+                disabled={withdrawStatus === "waiting"}
+              >
+                {withdrawStatus === "waiting"
+                  ? "So‘rov yuborildi..."
+                  : "Yechish so‘rovi"}
               </Button>
             </DialogFooter>
           </form>
@@ -357,7 +449,9 @@ export function BalanceTab({
       {/* Tarix */}
       <Card className="bg-white dark:bg-[#111827] shadow-lg">
         <CardHeader>
-          <CardTitle className="text-black dark:text-white">Yechish tarixi</CardTitle>
+          <CardTitle className="text-black dark:text-white">
+            Yechish tarixi
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -388,7 +482,9 @@ export function BalanceTab({
                         : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100"
                     }`}
                   >
-                    {item.status === "processed" ? "Tasdiqlangan" : "Kutilmoqda"}
+                    {item.status === "processed"
+                      ? "Tasdiqlangan"
+                      : "Kutilmoqda"}
                   </div>
                 </div>
               </div>
