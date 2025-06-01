@@ -1,34 +1,41 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Shield } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { useToast } from "@/components/ui/use-toast"
-import { useLanguage } from "@/components/language-provider"
+import { useState } from "react";
+import { Shield } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { useToast } from "@/components/ui/use-toast";
+import { useLanguage } from "@/components/providers/language-provider";
 
 export function ChangePassword() {
-  const { t } = useLanguage()
-  const { toast } = useToast()
-  const [currentPassword, setCurrentPassword] = useState("")
-  const [newPassword, setNewPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
+  const { t } = useLanguage();
+  const { toast } = useToast();
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChangePassword = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!currentPassword || !newPassword || !confirmPassword) {
       toast({
         title: "Error",
         description: "Please fill in all fields",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
     if (newPassword !== confirmPassword) {
@@ -36,8 +43,8 @@ export function ChangePassword() {
         title: "Error",
         description: "New passwords do not match",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
     if (newPassword.length < 8) {
@@ -45,24 +52,24 @@ export function ChangePassword() {
         title: "Error",
         description: "Password must be at least 8 characters long",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
-    setIsLoading(true)
+    setIsLoading(true);
 
     // Simulate API call
     setTimeout(() => {
-      setIsLoading(false)
+      setIsLoading(false);
       toast({
         title: "Success",
         description: "Password changed successfully",
-      })
-      setCurrentPassword("")
-      setNewPassword("")
-      setConfirmPassword("")
-    }, 1500)
-  }
+      });
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    }, 1500);
+  };
 
   return (
     <Card>
@@ -105,10 +112,14 @@ export function ChangePassword() {
         </form>
       </CardContent>
       <CardFooter>
-        <Button onClick={handleChangePassword} className="w-full" disabled={isLoading}>
+        <Button
+          onClick={handleChangePassword}
+          className="w-full"
+          disabled={isLoading}
+        >
           {isLoading ? t("changing") : t("changePassword")}
         </Button>
       </CardFooter>
     </Card>
-  )
+  );
 }

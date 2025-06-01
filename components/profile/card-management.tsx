@@ -16,7 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { useLanguage } from "@/components/language-provider";
+import { useLanguage } from "@/components/providers/language-provider";
 
 interface CardManagementProps {
   initialCardNumber?: string;

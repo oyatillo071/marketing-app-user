@@ -19,16 +19,17 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { useLanguage } from "@/components/language-provider";
+import { useLanguage } from "@/components/providers/language-provider";
 import { formatCurrency } from "@/lib/utils";
 import { useTariffs, usePurchaseTariff } from "@/hooks/query-hooks/use-tariffs";
 import { toast } from "sonner";
-
+import { CoinPrice } from "@/components/products/CoinPrice";
 export default function TariffsPage() {
   const { t, currency, language: lang } = useLanguage();
   const [selectedTariff, setSelectedTariff] = useState<any>(null);
-  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState<boolean>(false);
   const [user, setUser] = useState<{ id: number | null }>({ id: null });
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
 
   // Faqat clientda userni localStorage dan o‘qish
   useEffect(() => {
@@ -63,26 +64,30 @@ export default function TariffsPage() {
       : { value: 0, currency: currency };
 
   // confirm buy
-const handlePurchase = async () => {
-  if (!selectedTariff) return;
-  if (!user.id) {
-    toast.error(t("userNotFound") || "Foydalanuvchi aniqlanmadi!");
-    return;
-  }
-  purchaseMutation.mutate(
-    { tariffId: selectedTariff.id, userId: user.id },
-    {
-      onSuccess: () => {
-        setConfirmOpen(false);
-        toast.success(t("purchaseSuccess") || "Tarif muvaffaqiyatli sotib olindi!");
-      },
-      onError: () => {
-        toast.error(t("purchaseError") || "Xatolik yuz berdi!");
-      },
+  const handlePurchase = async () => {
+    if (!selectedTariff) return;
+    if (!user.id) {
+      toast.error(t("userNotFound") || "Foydalanuvchi aniqlanmadi!");
+      return;
     }
-  );
-};
-// ...existing code...
+    purchaseMutation.mutate(
+      { tariffId: selectedTariff.id, userId: user.id },
+      {
+        onSuccess: () => {
+          setConfirmOpen(false);
+          toast.success(
+            t("purchaseSuccess") || "Tarif muvaffaqiyatli sotib olindi!"
+          );
+        },
+        onError: () => {
+          toast.error(t("purchaseError") || "Xatolik yuz berdi!");
+        },
+      }
+    );
+  };
+
+  const isLoggedIn =
+    typeof window !== "undefined" && localStorage.getItem("mlm_token");
 
   if (isLoading) {
     return (
@@ -117,7 +122,6 @@ const handlePurchase = async () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {tariffs.map((tariff: any, index: number) => {
           const translation = getTranslation(tariff);
-          const price = getPrice(tariff);
 
           const features =
             typeof translation.features === "string"
@@ -155,9 +159,7 @@ const handlePurchase = async () => {
               </div>
               <CardHeader>
                 <CardTitle>{translation?.name}</CardTitle>
-                <CardDescription>
-                  {translation?.description}
-                </CardDescription>
+                <CardDescription>{translation?.description}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex items-center justify-between">
@@ -166,9 +168,7 @@ const handlePurchase = async () => {
                       {t("productPrice")}:
                     </p>
                     <p className="font-medium">
-                      {price.value
-                        ? `${price.value} ${price.currency}`
-                        : t("noPrice") || "Narxi yo'q"}
+                      {tariff?.coin ? tariff.coin : " - "} 🟡{" "}
                     </p>
                   </div>
                   <div className="space-y-1">
@@ -198,8 +198,8 @@ const handlePurchase = async () => {
                       {t("dailyIncome")}:
                     </p>
                     <p className="font-medium">
-                      {tariff.dailyProfit
-                        ? formatCurrency(tariff.dailyProfit, currency)
+                      {tariff.dailyProfit !== undefined
+                        ? `${tariff.dailyProfit} coin`
                         : "-"}
                     </p>
                   </div>
@@ -241,13 +241,20 @@ const handlePurchase = async () => {
                 <Button
                   className="w-full"
                   data-aos="zoom-in"
-                  disabled={!price.value}
+                  aria-label={t("buyTariff")}
+                  title={!tariff.coin ? t("coinUnavailable") : ""}
+                  disabled={!tariff.coin}
                   onClick={() => {
+                    if (!tariff.coin) return;
+                    if (!isLoggedIn) {
+                      setLoginModalOpen(true);
+                      return;
+                    }
                     setSelectedTariff(tariff);
                     setConfirmOpen(true);
                   }}
                 >
-                  {t("purchase")}
+                  {!tariff.coin ? t("coinUnavailable") : t("purchase")}
                 </Button>
               </CardFooter>
             </Card>
@@ -259,14 +266,17 @@ const handlePurchase = async () => {
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("purchaseConfirmTitle") || "Tarif sotib olish"}</DialogTitle>
+            <DialogTitle>
+              {t("purchaseConfirmTitle") || "Tarif sotib olish"}
+            </DialogTitle>
             <DialogDescription>
               {selectedTariff && (
                 <>
                   <b>{getTranslation(selectedTariff).name}</b> —{" "}
-                  {getPrice(selectedTariff).value} {getPrice(selectedTariff).currency}
+                  {selectedTariff.coin}
                   <br />
-                  {t("purchaseConfirmDesc") || "Ushbu tarifni sotib olmoqchimisiz?"}
+                  {t("purchaseConfirmDesc") ||
+                    "Ushbu tarifni sotib olmoqchimisiz?"}
                 </>
               )}
             </DialogDescription>
@@ -287,6 +297,34 @@ const handlePurchase = async () => {
               {purchaseMutation.isPending
                 ? t("processing") || "Yuklanmoqda..."
                 : t("confirm") || "Tasdiqlash"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* login Modal */}
+      <Dialog open={loginModalOpen} onOpenChange={setLoginModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {t("loginRequired") || "Login talab qilinadi"}
+            </DialogTitle>
+          </DialogHeader>
+          <p className="mb-4">
+            {t("loginForBuyTariff") ||
+              "Tarif sotib olish uchun avval tizimga kiring."}
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setLoginModalOpen(false)}>
+              {t("cancel")}
+            </Button>
+            <Button
+              className="bg-primary text-white"
+              onClick={() => {
+                setLoginModalOpen(false);
+                window.location.href = "/login";
+              }}
+            >
+              {t("login") || "Login"}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,5 +1,5 @@
 "use client";
-
+//  bu zahira cproducts details page xozir kerak emas
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
-import { useLanguage } from "@/components/language-provider";
+import { useLanguage } from "@/components/providers/language-provider";
 import { formatCurrency } from "@/lib/utils";
 import { fetchProducts } from "@/lib/api"; // Sizning API chaqiruvingiz
 
@@ -65,8 +65,7 @@ export default function ProductDetailPage() {
     return (
       translations.find((t) => t.language === language) ||
       translations.find((t) => t.language === "en") ||
-      translations[0] ||
-      { name: "", description: "" }
+      translations[0] || { name: "", description: "" }
     );
   };
 
@@ -74,8 +73,7 @@ export default function ProductDetailPage() {
   const getPrice = (prices: ProductPrice[]) => {
     return (
       prices.find((p) => p.currency === currency) ||
-      prices[0] ||
-      { value: 0, currency: "" }
+      prices[0] || { value: 0, currency: "" }
     );
   };
 
@@ -88,7 +86,9 @@ export default function ProductDetailPage() {
         setProduct(found || null);
 
         // Related products (oddiy misol: boshqa mahsulotlar)
-        setRelatedProducts(products.filter((p) => String(p.id) !== String(productId)).slice(0, 4));
+        setRelatedProducts(
+          products.filter((p) => String(p.id) !== String(productId)).slice(0, 4)
+        );
         setLoading(false);
       })
       .catch(() => {
@@ -100,14 +100,18 @@ export default function ProductDetailPage() {
   const handleAddToCart = () => {
     toast({
       title: t("addedToCart") || "Added to cart",
-      description: `${getTranslation(product?.translations || []).name} (${quantity}) ${t("addedToCartDesc") || ""}`,
+      description: `${
+        getTranslation(product?.translations || []).name
+      } (${quantity}) ${t("addedToCartDesc") || ""}`,
     });
   };
 
   const handleAddToWishlist = () => {
     toast({
       title: t("addedToWishlist") || "Added to wishlist",
-      description: `${getTranslation(product?.translations || []).name} ${t("addedToWishlistDesc") || ""}`,
+      description: `${getTranslation(product?.translations || []).name} ${
+        t("addedToWishlistDesc") || ""
+      }`,
     });
   };
 
@@ -122,10 +126,16 @@ export default function ProductDetailPage() {
   if (!product) {
     return (
       <div className="container mx-auto p-4 md:p-8 text-center min-h-[60vh] flex flex-col items-center justify-center">
-        <h1 className="text-2xl font-bold mb-4">{t("productNotFound") || "Product not found"}</h1>
-        <p className="mb-6 text-muted-foreground">{t("productNotFoundDesc") || ""}</p>
+        <h1 className="text-2xl font-bold mb-4">
+          {t("productNotFound") || "Product not found"}
+        </h1>
+        <p className="mb-6 text-muted-foreground">
+          {t("productNotFoundDesc") || ""}
+        </p>
         <Button asChild>
-          <Link href="/products">{t("backToProducts") || "Back to products"}</Link>
+          <Link href="/products">
+            {t("backToProducts") || "Back to products"}
+          </Link>
         </Button>
       </div>
     );
@@ -133,11 +143,15 @@ export default function ProductDetailPage() {
 
   const translation = getTranslation(product.translations || []);
   const priceObj = getPrice(product.prices || []);
-  const images = product.photo_url && product.photo_url.length > 0
-    ? product.photo_url.map((p) => p.photo_url)
-    : ["/placeholder.svg"];
+  const images =
+    product.photo_url && product.photo_url.length > 0
+      ? product.photo_url.map((p) => p.photo_url)
+      : ["/placeholder.svg"];
   const features = translation.features
-    ? translation.features.split(/[\n,;]/).map((f) => f.trim()).filter(Boolean)
+    ? translation.features
+        .split(/[\n,;]/)
+        .map((f) => f.trim())
+        .filter(Boolean)
     : [];
 
   return (
@@ -158,8 +172,10 @@ export default function ProductDetailPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
         <div data-aos="fade-right">
-
-          <div className="relative aspect-square overflow-hidden rounded-lg mb-4" style={{ minHeight: 200 }}>
+          <div
+            className="relative aspect-square overflow-hidden rounded-lg mb-4"
+            style={{ minHeight: 200 }}
+          >
             <Image
               src={images[activeImageIndex] || "/placeholder.svg"}
               alt={translation.name}
@@ -212,7 +228,9 @@ export default function ProductDetailPage() {
             {formatCurrency(priceObj.value, priceObj.currency || currency)}
           </p>
 
-          <p className="mb-6 text-muted-foreground">{translation.description}</p>
+          <p className="mb-6 text-muted-foreground">
+            {translation.description}
+          </p>
 
           <div className="mb-6">
             <label className="block text-sm font-medium mb-2">
@@ -258,8 +276,12 @@ export default function ProductDetailPage() {
                   <TabsTrigger value="description">
                     {t("description") || "Description"}
                   </TabsTrigger>
-                  <TabsTrigger value="features">{t("features") || "Features"}</TabsTrigger>
-                  <TabsTrigger value="usage">{t("usage") || "Usage"}</TabsTrigger>
+                  <TabsTrigger value="features">
+                    {t("features") || "Features"}
+                  </TabsTrigger>
+                  <TabsTrigger value="usage">
+                    {t("usage") || "Usage"}
+                  </TabsTrigger>
                 </TabsList>
                 <TabsContent value="description" className="mt-0">
                   <p>{translation.longDescription}</p>
@@ -280,7 +302,9 @@ export default function ProductDetailPage() {
                   {/* Ingredients bo'lsa chiqariladi */}
                   {translation.features && (
                     <div className="mt-4">
-                      <h4 className="font-medium mb-2">{t("ingredients") || "Ingredients"}</h4>
+                      <h4 className="font-medium mb-2">
+                        {t("ingredients") || "Ingredients"}
+                      </h4>
                       <p className="text-sm text-muted-foreground">
                         {translation.features}
                       </p>
@@ -295,10 +319,14 @@ export default function ProductDetailPage() {
 
       {relatedProducts.length > 0 && (
         <div className="mb-12">
-          <h2 className="text-2xl font-bold mb-6">{t("relatedProducts") || "Related Products"}</h2>
+          <h2 className="text-2xl font-bold mb-6">
+            {t("relatedProducts") || "Related Products"}
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {relatedProducts.map((relatedProduct) => {
-              const relTranslation = getTranslation(relatedProduct.translations || []);
+              const relTranslation = getTranslation(
+                relatedProduct.translations || []
+              );
               const relPrice = getPrice(relatedProduct.prices || []);
               const relImage =
                 relatedProduct.photo_url && relatedProduct.photo_url.length > 0
@@ -324,7 +352,10 @@ export default function ProductDetailPage() {
                     </h3>
                     <div className="flex justify-between items-center">
                       <p className="font-bold text-primary">
-                        {formatCurrency(relPrice.value, relPrice.currency || currency)}
+                        {formatCurrency(
+                          relPrice.value,
+                          relPrice.currency || currency
+                        )}
                       </p>
                       <div className="flex items-center">
                         <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />

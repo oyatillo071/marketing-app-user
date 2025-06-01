@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useLanguage } from "@/components/language-provider";
+import { useLanguage } from "@/components/providers/language-provider";
 
 export default function AboutPage() {
   const { t } = useLanguage();

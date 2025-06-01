@@ -1,70 +1,70 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { ShoppingCart, Star, Search, Grid, List } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { useLanguage } from "@/components/language-provider"
-import { useRouter } from "next/navigation"
-import { useProducts } from "@/hooks/query-hooks/use-products"
-import { SkeletonCard } from "@/components/products/SkeletonCard"
-import { ProductCard } from "@/components/products/page"
-
-
+import { useState, useEffect } from "react";
+import { ShoppingCart, Star, Search, Grid, List } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useLanguage } from "@/components/providers/language-provider";
+import { useRouter } from "next/navigation";
+import { useProducts } from "@/hooks/query-hooks/use-products";
+import { SkeletonCard } from "@/components/products/SkeletonCard";
+import { ProductCard } from "@/components/products/page";
 
 type ProductTranslation = {
-  id: number
-  product_id: number
-  language: string
-  name: string
-  description: string
-}
+  id: number;
+  product_id: number;
+  language: string;
+  name: string;
+  description: string;
+};
 
 type ProductPrice = {
-  id: number
-  product_id: number
-  currency: string
-  value: number
-}
+  id: number;
+  product_id: number;
+  currency: string;
+  value: number;
+};
 
 type ProductPhoto = {
-  id: number
-  productId: number
-  photo_url: string
-}
+  id: number;
+  productId: number;
+  photo_url: string;
+};
 
 type Product = {
-  id: number
-  rating: number
-  rewiev: number
-  photo_url: ProductPhoto[]
-  translations: ProductTranslation[]
-  prices: ProductPrice[]
-  category?: string
-}
+  id: number;
+  rating: number;
+  rewiev: number;
+  photo_url: ProductPhoto[];
+  translations: ProductTranslation[];
+  prices: ProductPrice[];
+  category?: string;
+};
 
 const categories = [
   { id: "skincare", name: "Skincare" },
   { id: "supplements", name: "Supplements" },
   { id: "wellness", name: "Wellness" },
   { id: "all", name: "All Products" },
-]
+];
 
 export default function ProductsPage() {
-  const { currency, language, t } = useLanguage()
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("all")
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
-  const [mounted, setMounted] = useState(false)
-  const { push } = useRouter()
-  const { products, isLoading, error } = useProducts()
+  const { currency, language, t } = useLanguage();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [mounted, setMounted] = useState(false);
+  const { push } = useRouter();
+  const { products, isLoading, error } = useProducts();
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
   if (!mounted) {
-    return <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-950" />
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-950" />
+    );
   }
 
   // Helper functions
@@ -73,30 +73,39 @@ export default function ProductsPage() {
       translations.find((t) => t.language === language) ||
       translations.find((t) => t.language === "en") ||
       translations[0] || { name: "", description: "" }
-    )
-  }
+    );
+  };
 
   const getPrice = (prices: ProductPrice[]) => {
-    return prices.find((p) => p.currency === currency) || prices[0] || { value: 0, currency: "" }
-  }
+    return (
+      prices.find((p) => p.currency === currency) ||
+      prices[0] || { value: 0, currency: "" }
+    );
+  };
 
-  const filteredProducts = products.filter((product:any) => {
-    const translation = getTranslation(product.translations || [])
+  const filteredProducts = products.filter((product: any) => {
+    const translation = getTranslation(product.translations || []);
     const matchesSearch =
       translation.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      translation.description?.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCategory = selectedCategory === "all" || product.category === selectedCategory
-    return matchesSearch && matchesCategory
-  })
+      translation.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory =
+      selectedCategory === "all" || product.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-950 dark:to-black">
       {/* Header */}
       <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 md:sticky top-0 z-40">
         <div className="container mx-auto p-4 md:p-5">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 " data-aos="fade-up">
+          <div
+            className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 "
+            data-aos="fade-up"
+          >
             <p className="text-gray-600 dark:text-gray-300 md:text-lg text-base mb-0">
-              {t("Discover our premium range of cosmetics and health-enhancing products")}
+              {t(
+                "Discover our premium range of cosmetics and health-enhancing products"
+              )}
             </p>
             <div className="relative w-full max-w-xs md:max-w-xs">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 h-5 w-5" />
@@ -113,7 +122,9 @@ export default function ProductsPage() {
             {categories.map((category) => (
               <Button
                 key={category.id}
-                variant={selectedCategory === category.id ? "default" : "outline"}
+                variant={
+                  selectedCategory === category.id ? "default" : "outline"
+                }
                 size="sm"
                 onClick={() => setSelectedCategory(category.id)}
                 className={`flex-1 ${
@@ -137,7 +148,9 @@ export default function ProductsPage() {
             {categories.map((category) => (
               <Button
                 key={category.id}
-                variant={selectedCategory === category.id ? "default" : "outline"}
+                variant={
+                  selectedCategory === category.id ? "default" : "outline"
+                }
                 size="sm"
                 onClick={() => setSelectedCategory(category.id)}
                 className={`w-full justify-start ${
@@ -165,7 +178,7 @@ export default function ProductsPage() {
                     : "grid-cols-1"
                 }`}
               >
-                {Array.from({ length: 6 }).map((_, i:number) => (
+                {Array.from({ length: 6 }).map((_, i: number) => (
                   <SkeletonCard key={i} />
                 ))}
               </div>
@@ -192,12 +205,13 @@ export default function ProductsPage() {
             </div>
           ) : (
             <div className="text-center py-20" data-aos="fade-up">
-              <p className="text-lg text-gray-600 dark:text-gray-300">{t("noResults")}</p>
+              <p className="text-lg text-gray-600 dark:text-gray-300">
+                {t("noResults")}
+              </p>
             </div>
           )}
         </main>
       </div>
-      
     </div>
   );
 }

@@ -5,9 +5,9 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Menu, User, X, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { LanguageSwitcher } from "@/components/language-switcher";
-import { useLanguage } from "@/components/language-provider";
+import { ThemeToggle } from "@/components/providers/theme-toggle";
+import { LanguageSwitcher } from "@/components/providers/language-switcher";
+import { useLanguage } from "@/components/providers/language-provider";
 import { fetchStatistic } from "@/lib/api";
 import { toast } from "sonner";
 
@@ -103,10 +103,10 @@ export default function Header() {
   const isActive = (path: string) => pathname === path;
 
   const navigation = [
-    { name: t("dashboard"), href: "/dashboard" },
+    { name: t("dashboard"), href: "/dashboard", auth: true },
     { name: t("products"), href: "/products" },
     { name: t("tariffs"), href: "/tariffs" },
-    { name: t("about"), href: "/about" },
+    { name: t("about"), href: "/about", guestOnly: true },
   ];
 
   // Recent users massivini olish
@@ -142,7 +142,13 @@ export default function Header() {
               </Link>
               <nav className="hidden lg:ml-6 lg:flex md:space-x-4">
                 {navigation
-                  .filter((item) => item.href !== "/dashboard" || isLoggedIn)
+                  .filter(
+                    (item) =>
+                      // dashboard faqat login bo‘lsa
+                      (item.href !== "/dashboard" || isLoggedIn) &&
+                      // about faqat guest uchun
+                      (!item.guestOnly || !isLoggedIn)
+                  )
                   .map((item) => (
                     <Link
                       key={item.name}
@@ -174,7 +180,17 @@ export default function Header() {
                 )}
                 <LanguageSwitcher />
                 <ThemeToggle />
-                {isLoggedIn ? (
+                {!isLoggedIn ? (
+                  pathname === "/login" ? (
+                    <Button asChild size="sm">
+                      <Link href="/register">{t("register")}</Link>
+                    </Button>
+                  ) : (
+                    <Button asChild size="sm">
+                      <Link href="/login">{t("login")}</Link>
+                    </Button>
+                  )
+                ) : (
                   <>
                     <Button asChild size="sm" variant="outline">
                       <Link href="/dashboard">
@@ -192,15 +208,7 @@ export default function Header() {
                       <LogOut className="h-4 w-4 mr-1" />
                     </Button>
                   </>
-                ) : pathname === "/" || pathname === "/register" ? (
-                  <Button asChild size="sm">
-                    <Link href="/login">{t("login")}</Link>
-                  </Button>
-                ) : pathname === "/login" ? (
-                  <Button asChild size="sm">
-                    <Link href="/register">{t("register")}</Link>
-                  </Button>
-                ) : null}
+                )}
               </div>
               <div className="md:hidden flex items-center">
                 {userCount !== null ? (
@@ -277,7 +285,11 @@ export default function Header() {
       {isMenuOpen && (
         <div className="md:hidden bg-background border-t border-border px-4 py-3 space-y-2 shadow-lg absolute left-0 right-0 top-16 z-50 animate-fade-in">
           {navigation
-            .filter((item) => item.href !== "/dashboard" || isLoggedIn)
+            .filter(
+              (item) =>
+                (item.href !== "/dashboard" || isLoggedIn) &&
+                (!item.guestOnly || !isLoggedIn)
+            )
             .map((item) => (
               <Link
                 key={item.name}

@@ -32,7 +32,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/use-toast";
-import { useLanguage } from "@/components/language-provider";
+import { useLanguage } from "@/components/providers/language-provider";
 import { Switch } from "@/components/ui/switch";
 import {
   Accordion,
@@ -40,17 +40,19 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { CardManagement } from "@/components/card-management";
+import { CardManagement } from "@/components/profile/card-management";
 import { ChangePassword } from "@/components/profile/change-password";
 import { AvatarUpload } from "@/components/profile/avatar-upload";
-import { EarningsChart } from "@/components/earnings-chart";
-import { ReferralShare } from "@/components/referral-share";
+import { EarningsChart } from "@/components/dashboard/earnings-chart";
+import { ReferralShare } from "@/components/dashboard/referral-share";
 import { formatCurrency } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { Toaster, toast } from "sonner";
-import { TariffCountdown } from "./TariffCountdown";
-import { BalanceTab } from "./BalanceTab";
+import { TariffCountdown } from "../../components/dashboard/TariffCountdown";
+import { BalanceTab } from "../../components/dashboard/BalanceTab";
 import SpinPage from "../spin/page";
+import { ReferralList } from "@/components/dashboard/ReferralList";
+// import { fetchReferrals } from "@/api/api";
 
 // Mock data
 const mockUserData = {
@@ -162,28 +164,6 @@ export default function ProfilePage() {
   // const { toast } = useToast();
   const router = useRouter();
 
-  // LocalStorage tekshirish va redirect
-  useEffect(() => {
-    function checkUser() {
-      const user = localStorage.getItem("mlm_user");
-      if (!user) {
-        router.push("/");
-      }
-    }
-
-    checkUser();
-
-    // Boshqa tablarda login/logout bo‘lsa ham tekshir
-    window.addEventListener("storage", checkUser);
-
-    return () => {
-      window.removeEventListener("storage", checkUser);
-    };
-  }, [router]);
-
-  const [name, setName] = useState(mockUserData.name);
-  const [email, setEmail] = useState(mockUserData.email);
-  const [phone, setPhone] = useState(mockUserData.phone);
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState("referrals");
   const [showPaymentTimer, setShowPaymentTimer] = useState(false);
@@ -209,6 +189,32 @@ export default function ProfilePage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
+  // LocalStorage tekshirish va redirect
+  useEffect(() => {
+    function checkUser() {
+      const user = localStorage.getItem("mlm_user");
+      if (!user) {
+        router.push("/");
+      } else {
+        try {
+          setUser(JSON.parse(user));
+        } catch {
+          setUser(null);
+        }
+      }
+    }
+
+    checkUser();
+
+    // Boshqa tablarda login/logout bo‘lsa ham tekshir
+    window.addEventListener("storage", checkUser);
+
+    return () => {
+      window.removeEventListener("storage", checkUser);
+    };
+  }, [router]);
 
   const handleSaveProfile = () => {
     toast("Your profile information has been updated");
@@ -318,7 +324,6 @@ export default function ProfilePage() {
             className="space-y-6"
           >
             <TabsList className="grid grid-cols-2 md:grid-cols-7 gap-2 md:h-12 h-48 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-              
               <TabsTrigger
                 value="earnings"
                 data-aos="fade-up"
@@ -326,7 +331,7 @@ export default function ProfilePage() {
               >
                 {t("earnings")}
               </TabsTrigger>
-              
+
               <TabsTrigger
                 value="referrals"
                 data-aos="fade-up"
@@ -334,7 +339,7 @@ export default function ProfilePage() {
               >
                 {t("referrals")}
               </TabsTrigger>
-    
+
               <TabsTrigger
                 value="spinner"
                 data-aos="fade-up"
@@ -350,7 +355,7 @@ export default function ProfilePage() {
               >
                 Balans
               </TabsTrigger>
-              
+
               <TabsTrigger
                 value="profile"
                 data-aos="fade-up"
@@ -360,13 +365,6 @@ export default function ProfilePage() {
               </TabsTrigger>
 
               <TabsTrigger
-                value="settings"
-                data-aos="fade-up"
-                data-aos-delay="700"
-              >
-                Sozlamalar
-              </TabsTrigger>
-              <TabsTrigger
                 value="support"
                 data-aos="fade-up"
                 data-aos-delay="800"
@@ -375,110 +373,8 @@ export default function ProfilePage() {
               </TabsTrigger>
             </TabsList>
 
-
             <TabsContent value="referrals" className="space-y-8">
-              <Card
-                data-aos="fade-up"
-                className="bg-white dark:bg-[#111827] shadow-lg"
-              >
-                <CardHeader>
-                  <CardTitle className="text-black dark:text-white">
-                    {t("referrals")}
-                  </CardTitle>
-                  <CardDescription className="text-gray-600 dark:text-gray-300">
-                    {t("invitedFriends")}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <Card
-                      data-aos="fade-up"
-                      data-aos-delay="100"
-                      className="bg-white dark:bg-[#1a2635] shadow-md"
-                    >
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-black dark:text-white">
-                          {t("totalReferrals")}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-3xl font-bold text-[#00FF99]">
-                          {mockUserData.referrals.length}
-                        </p>
-                      </CardContent>
-                    </Card>
-                    <Card
-                      data-aos="fade-up"
-                      data-aos-delay="200"
-                      className="bg-white dark:bg-[#1a2635] shadow-md"
-                    >
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-black dark:text-white">
-                          {t("activeReferrals")}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-3xl font-bold text-[#00FF99]">
-                          {
-                            mockUserData.referrals.filter(
-                              (r) => r.status === "paid"
-                            ).length
-                          }
-                        </p>
-                      </CardContent>
-                    </Card>
-                    <Card
-                      data-aos="fade-up"
-                      data-aos-delay="300"
-                      className="bg-white dark:bg-[#1a2635] shadow-md"
-                    >
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-black dark:text-white">
-                          {t("referralEarnings")}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-3xl font-bold text-[#00FF99]">
-                          {formatCurrency(1240, currency)}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  <div className="space-y-4">
-                    {mockUserData.referrals.map((referral) => (
-                      <div
-                        key={referral.id}
-                        className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-4 last:border-0 last:pb-0"
-                      >
-                        <div className="flex items-center gap-3">
-                          <Users className="h-8 w-8 text-[#00FF99]" />
-                          <div>
-                            <p className="font-medium text-black dark:text-white">
-                              {referral.name}
-                            </p>
-                            <p className="text-sm text-gray-600 dark:text-gray-300">
-                              {new Date(referral.date).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                        <div
-                          className={`px-2 py-1 rounded-full text-xs ${
-                            referral.status === "paid"
-                              ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
-                              : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100"
-                          }`}
-                        >
-                          {t(referral.status)}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <ReferralShare />
-                </CardFooter>
-              </Card>
+              <ReferralList t={t} />
             </TabsContent>
 
             <TabsContent value="profile" className="space-y-8">
@@ -501,7 +397,7 @@ export default function ProfilePage() {
                       </CardHeader>
                       <CardContent>
                         <p className="text-xl font-mono text-center ">
-                          {mockUserData.id}
+                          {user?.id || "Unknown User Id"}
                         </p>
                         {/* Joriy tarifga qancha vaqt qolganini ko‘rsatish */}
                         {mockUserData.tariffs.length > 0 && (
@@ -535,39 +431,7 @@ export default function ProfilePage() {
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      {isEditing ? (
-                        <div className="space-y-4">
-                          <div className="space-y-2">
-                            <Label
-                              htmlFor="name"
-                              className="text-black dark:text-white"
-                            >
-                              {t("name")}
-                            </Label>
-                            <Input
-                              id="name"
-                              value={name}
-                              onChange={(e) => setName(e.target.value)}
-                              className="border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label
-                              htmlFor="email"
-                              className="text-black dark:text-white"
-                            >
-                              Email
-                            </Label>
-                            <Input
-                              id="email"
-                              type="email"
-                              value={email}
-                              onChange={(e) => setEmail(e.target.value)}
-                              className="border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                            />
-                          </div>
-                        </div>
-                      ) : (
+                      {
                         <div className="space-y-4">
                           <div className="flex items-center gap-3">
                             <User className="h-5 w-5 text-muted-foreground" />
@@ -576,7 +440,7 @@ export default function ProfilePage() {
                                 {t("name")}
                               </p>
                               <p className="font-medium text-black dark:text-white">
-                                {name}
+                                {user?.name}
                               </p>
                             </div>
                           </div>
@@ -587,15 +451,27 @@ export default function ProfilePage() {
                                 Email
                               </p>
                               <p className="font-medium text-black dark:text-white">
-                                {email}
+                                {user?.email}
                               </p>
                             </div>
                           </div>
                           {/* Telefon raqam olib tashlandi */}
                         </div>
-                      )}
+                      }
                     </CardContent>
-                    <CardFooter>
+
+                    <div className="flex  items-center gap-4 p-4">
+                      <div className="pl-10">
+                        <p className="text-sm text-gray-600 dark:text-gray-300">
+                          {t("firstSignDate")}
+                        </p>
+                        <p className="font-medium text-black dark:text-white">
+                          {user?.createdAt}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* <CardFooter>
                       {isEditing ? (
                         <div className="flex gap-2 w-full">
                           <Button
@@ -621,14 +497,14 @@ export default function ProfilePage() {
                           {t("editProfile")}
                         </Button>
                       )}
-                    </CardFooter>
+                    </CardFooter> */}
                   </Card>
 
-                  <div data-aos="fade-up" data-aos-delay="100">
+                  {/* <div data-aos="fade-up" data-aos-delay="100">
                     <CardManagement
                       initialCardNumber={mockUserData.cardNumber}
                     />
-                  </div>
+                  </div> */}
 
                   {/* <div data-aos="fade-up" data-aos-delay="200">
                     <ChangePassword />
@@ -641,184 +517,17 @@ export default function ProfilePage() {
               <EarningsChart />
             </TabsContent>
 
-
             <TabsContent value="spinner" className="space-y-8">
               <SpinPage />
             </TabsContent>
 
-{/* 
+            {/* 
             <TabsContent value="withdrawal" className="space-y-8">
               <WithdrawalTab />
             </TabsContent> */}
 
             <TabsContent value="balance" className="space-y-8">
-              <BalanceTab
-                userId={mockUserData.id}
-                currency={currency}
-                balance={1500} // yoki kerakli balans qiymati
-              />
-            </TabsContent>
-
-            <TabsContent value="settings" className="space-y-6">
-              <Card
-                data-aos="fade-up"
-                className="bg-white dark:bg-[#111827] shadow-lg"
-              >
-                <CardHeader>
-                  <CardTitle className="text-black dark:text-white">
-                    Profil sozlamalari
-                  </CardTitle>
-                  <CardDescription className="text-gray-600 dark:text-gray-300">
-                    Profilingiz ma’lumotlarini tahrirlashingiz mumkin.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="name"
-                        className="text-black dark:text-white"
-                      >
-                        Ism
-                      </Label>
-                      <Input
-                        id="name"
-                        value={profileData.name}
-                        onChange={(e) =>
-                          setProfileData({
-                            ...profileData,
-                            name: e.target.value,
-                          })
-                        }
-                        className="border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                        disabled={!isEditingSettings}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="settings-email"
-                        className="text-black dark:text-white"
-                      >
-                        Email
-                      </Label>
-                      <Input
-                        id="settings-email"
-                        type="email"
-                        value={settingsEmail}
-                        onChange={(e) => setSettingsEmail(e.target.value)}
-                        className="border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                        disabled={!isEditingSettings}
-                      />
-                    </div>
-                    {isEditingSettings ? (
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          onClick={() => setIsEditingSettings(false)}
-                          className="flex-1 dark:bg-primary/10 dark:text-primary bg-red-400 dark:hover:bg-red-400 dark:hover:text-white  shadow-lg border-none  hover:bg-gray-300 text-white hover:text-black"
-                        >
-                          Bekor qilish
-                        </Button>
-                        <Button
-                          className="flex-1 bg-[#00FF99] text-white hover:bg-[#00FF99]/90"
-                          onClick={() => {
-                            handleProfileUpdate();
-                            setIsEditingSettings(false);
-                          }}
-                        >
-                          Saqlash
-                        </Button>
-                      </div>
-                    ) : (
-                      <Button
-                        variant="destructive"
-                        onClick={() => setIsEditingSettings(true)}
-                        className="w-full bg-accent-teal/10 text-accent-teal hover:bg-accent-teal/20 shadow-lg border-none"
-                      >
-                        Tahrirlash
-                      </Button>
-                    )}
-                  </div>
-                  {/* Parol o‘zgartirish va boshqa qismlar o‘z joyida */}
-                  {/* <Card
-                    data-aos="fade-up"
-                    className="bg-white dark:bg-[#111827] shadow-lg"
-                  >
-                    <CardHeader>
-                      <CardTitle className="text-black dark:text-white">
-                        Parolni o‘zgartirish
-                      </CardTitle>
-                      <CardDescription className="text-gray-600 dark:text-gray-300">
-                        Hisobingiz parolini yangilang.
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <form
-                        onSubmit={handleChangePassword}
-                        className="space-y-4"
-                      >
-                        <div className="space-y-2">
-                          <Label
-                            htmlFor="old-password"
-                            className="text-black dark:text-white"
-                          >
-                            Eski parol
-                          </Label>
-                          <Input
-                            id="old-password"
-                            type="password"
-                            value={oldPassword}
-                            onChange={(e) => setOldPassword(e.target.value)}
-                            className="border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                            required
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label
-                            htmlFor="new-password"
-                            className="text-black dark:text-white"
-                          >
-                            Yangi parol
-                          </Label>
-                          <Input
-                            id="new-password"
-                            type="password"
-                            value={newPassword}
-                            onChange={(e) => setNewPassword(e.target.value)}
-                            className="border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                            required
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label
-                            htmlFor="confirm-password"
-                            className="text-black dark:text-white"
-                          >
-                            Yangi parolni tasdiqlang
-                          </Label>
-                          <Input
-                            id="confirm-password"
-                            type="password"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            className="border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                            required
-                          />
-                        </div>
-                        <Button
-                          type="submit"
-                          className="w-full bg-[#00FF99] text-white hover:bg-[#00FF99]/90"
-                          disabled={isChangingPassword}
-                        >
-                          {isChangingPassword
-                            ? "Yuklanmoqda..."
-                            : "Parolni o‘zgartirish"}
-                        </Button>
-                      </form>
-                    </CardContent>
-                  </Card> */}
-                </CardContent>
-              </Card>
+              <BalanceTab userId={mockUserData.id} coin={user?.coin} />
             </TabsContent>
 
             <TabsContent value="support" className="space-y-6">
@@ -986,7 +695,7 @@ function WithdrawalTab() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleWithdrawal} className="space-y-6">
-              <div className="space-y-2">                           
+              <div className="space-y-2">
                 <Label className="text-black dark:text-white">
                   {t("selectCard")}
                 </Label>

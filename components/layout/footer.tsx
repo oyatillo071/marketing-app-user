@@ -8,7 +8,7 @@ import {
   Twitter,
   PhoneIcon as WhatsApp,
 } from "lucide-react";
-import { useLanguage } from "@/components/language-provider";
+import { useLanguage } from "@/components/providers/language-provider";
 
 export default function Footer() {
   const { t } = useLanguage();

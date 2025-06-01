@@ -1,16 +1,22 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Check, Clock, DollarSign, Eye, EyeOff } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { useToast } from "@/components/ui/use-toast"
-import { useLanguage } from "@/components/language-provider"
-import { formatCurrency } from "@/lib/utils"
+import { useState } from "react";
+import { Check, Clock, DollarSign, Eye, EyeOff } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/components/ui/use-toast";
+import { useLanguage } from "@/components/providers/language-provider";
+import { formatCurrency } from "@/lib/utils";
 
 // Mock data
 const mockWithdrawalData = {
@@ -21,36 +27,39 @@ const mockWithdrawalData = {
     { id: 2, amount: 300, status: "pending", date: "2023-05-15" },
     { id: 3, amount: 700, status: "processed", date: "2023-04-20" },
   ],
-}
+};
 
 export default function WithdrawalPage() {
-  const { t, currency } = useLanguage()
-  const { toast } = useToast()
-  const [cardNumber, setCardNumber] = useState("")
-  const [amount, setAmount] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [showCardNumber, setShowCardNumber] = useState(false)
+  const { t, currency } = useLanguage();
+  const { toast } = useToast();
+  const [cardNumber, setCardNumber] = useState("");
+  const [amount, setAmount] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [showCardNumber, setShowCardNumber] = useState(false);
 
   const handleWithdrawal = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!cardNumber || !amount) {
       toast({
         title: "Error",
         description: "Please fill in all fields",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
-    const amountValue = Number.parseFloat(amount)
+    const amountValue = Number.parseFloat(amount);
     if (isNaN(amountValue) || amountValue < mockWithdrawalData.minimumAmount) {
       toast({
         title: "Error",
-        description: `Minimum withdrawal amount is ${formatCurrency(mockWithdrawalData.minimumAmount, currency)}`,
+        description: `Minimum withdrawal amount is ${formatCurrency(
+          mockWithdrawalData.minimumAmount,
+          currency
+        )}`,
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
     if (amountValue > mockWithdrawalData.balance) {
@@ -58,54 +67,56 @@ export default function WithdrawalPage() {
         title: "Error",
         description: "Insufficient balance",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
-    setIsLoading(true)
+    setIsLoading(true);
 
     // Simulate API call
     setTimeout(() => {
-      setIsLoading(false)
+      setIsLoading(false);
       toast({
         title: "Success",
         description: "Withdrawal request submitted successfully",
-      })
-      setCardNumber("")
-      setAmount("")
-    }, 1500)
-  }
+      });
+      setCardNumber("");
+      setAmount("");
+    }, 1500);
+  };
 
   const formatCardNumber = (value: string) => {
     // Remove all non-digit characters
-    const digits = value.replace(/\D/g, "")
+    const digits = value.replace(/\D/g, "");
 
     // Format with spaces every 4 digits
-    const formatted = digits.replace(/(\d{4})(?=\d)/g, "$1 ")
+    const formatted = digits.replace(/(\d{4})(?=\d)/g, "$1 ");
 
-    return formatted
-  }
+    return formatted;
+  };
 
   const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatCardNumber(e.target.value)
-    setCardNumber(formatted)
-  }
+    const formatted = formatCardNumber(e.target.value);
+    setCardNumber(formatted);
+  };
 
   const getMaskedCardNumber = () => {
-    if (!cardNumber) return ""
-    if (showCardNumber) return cardNumber
+    if (!cardNumber) return "";
+    if (showCardNumber) return cardNumber;
 
-    const digits = cardNumber.replace(/\s/g, "")
-    if (digits.length < 8) return cardNumber // Don't mask if too short
+    const digits = cardNumber.replace(/\s/g, "");
+    if (digits.length < 8) return cardNumber; // Don't mask if too short
 
-    const firstFour = digits.substring(0, 4)
-    const lastFour = digits.substring(digits.length - 4)
-    const middleLength = digits.length - 8
-    const maskedMiddle = "*".repeat(middleLength)
+    const firstFour = digits.substring(0, 4);
+    const lastFour = digits.substring(digits.length - 4);
+    const middleLength = digits.length - 8;
+    const maskedMiddle = "*".repeat(middleLength);
 
     // Format with spaces
-    return `${firstFour} ${maskedMiddle.replace(/(.{4})/g, "$1 ").trim()} ${lastFour}`.trim()
-  }
+    return `${firstFour} ${maskedMiddle
+      .replace(/(.{4})/g, "$1 ")
+      .trim()} ${lastFour}`.trim();
+  };
 
   return (
     <div className="container mx-auto p-4 md:p-8">
@@ -115,7 +126,8 @@ export default function WithdrawalPage() {
             <CardHeader>
               <CardTitle>{t("withdrawal")}</CardTitle>
               <CardDescription>
-                {t("minimumAmount")}: {formatCurrency(mockWithdrawalData.minimumAmount, currency)}
+                {t("minimumAmount")}:{" "}
+                {formatCurrency(mockWithdrawalData.minimumAmount, currency)}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -140,7 +152,11 @@ export default function WithdrawalPage() {
                       className="absolute right-0 top-0 h-full"
                       onClick={() => setShowCardNumber(!showCardNumber)}
                     >
-                      {showCardNumber ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      {showCardNumber ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -160,10 +176,17 @@ export default function WithdrawalPage() {
                     />
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    Available balance: {formatCurrency(mockWithdrawalData.balance, currency)}
+                    Available balance:{" "}
+                    {formatCurrency(mockWithdrawalData.balance, currency)}
                   </p>
                 </div>
-                <Button type="submit" className="w-full" disabled={isLoading} data-aos="zoom-in" data-aos-delay="300">
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={isLoading}
+                  data-aos="zoom-in"
+                  data-aos-delay="300"
+                >
                   {isLoading ? "Processing..." : t("requestWithdrawal")}
                 </Button>
               </form>
@@ -184,8 +207,12 @@ export default function WithdrawalPage() {
                     className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0"
                   >
                     <div>
-                      <p className="font-medium">{formatCurrency(item.amount, currency)}</p>
-                      <p className="text-sm text-muted-foreground">{new Date(item.date).toLocaleDateString()}</p>
+                      <p className="font-medium">
+                        {formatCurrency(item.amount, currency)}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(item.date).toLocaleDateString()}
+                      </p>
                     </div>
                     <div
                       className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs ${
@@ -194,7 +221,11 @@ export default function WithdrawalPage() {
                           : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100"
                       }`}
                     >
-                      {item.status === "processed" ? <Check className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
+                      {item.status === "processed" ? (
+                        <Check className="h-3 w-3" />
+                      ) : (
+                        <Clock className="h-3 w-3" />
+                      )}
                       {t(item.status)}
                     </div>
                   </div>
@@ -205,5 +236,5 @@ export default function WithdrawalPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

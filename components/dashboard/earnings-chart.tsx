@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Line } from "react-chartjs-2"
+import { useState } from "react";
+import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -12,14 +12,28 @@ import {
   Tooltip,
   Legend,
   type ChartOptions,
-} from "chart.js"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { useLanguage } from "@/components/language-provider"
-import { formatCurrency } from "@/lib/utils"
+} from "chart.js";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/components/providers/language-provider";
+import { formatCurrency } from "@/lib/utils";
 
 // Register ChartJS components
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 // Mock data
 const mockEarningsData = {
@@ -35,13 +49,13 @@ const mockEarningsData = {
     labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
     data: [300, 350, 320, 400, 450, 500],
   },
-}
+};
 
-type TimeRange = "daily" | "weekly" | "monthly"
+type TimeRange = "daily" | "weekly" | "monthly";
 
 export function EarningsChart() {
-  const { t, currency } = useLanguage()
-  const [timeRange, setTimeRange] = useState<TimeRange>("daily")
+  const { t, currency } = useLanguage();
+  const [timeRange, setTimeRange] = useState<TimeRange>("daily");
 
   const data = {
     labels: mockEarningsData[timeRange].labels,
@@ -55,7 +69,7 @@ export function EarningsChart() {
         fill: true,
       },
     ],
-  }
+  };
 
   const options: ChartOptions<"line"> = {
     responsive: true,
@@ -65,7 +79,8 @@ export function EarningsChart() {
       },
       tooltip: {
         callbacks: {
-          label: (context) => `${t("earnings")}: ${formatCurrency(context.parsed.y, currency)}`,
+          label: (context) =>
+            `${t("earnings")}: ${formatCurrency(context.parsed.y, currency)}`,
         },
       },
     },
@@ -77,9 +92,12 @@ export function EarningsChart() {
         },
       },
     },
-  }
+  };
 
-  const totalEarnings = mockEarningsData[timeRange].data.reduce((sum, value) => sum + value, 0)
+  const totalEarnings = mockEarningsData[timeRange].data.reduce(
+    (sum, value) => sum + value,
+    0
+  );
 
   return (
     <Card>
@@ -116,9 +134,11 @@ export function EarningsChart() {
         </div>
         <div className="mt-4 text-center">
           <p className="text-sm text-muted-foreground">{t("totalEarnings")}</p>
-          <p className="text-2xl font-bold">{formatCurrency(totalEarnings, currency)}</p>
+          <p className="text-2xl font-bold">
+            {formatCurrency(totalEarnings, currency)}
+          </p>
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

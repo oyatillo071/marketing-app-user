@@ -22,6 +22,15 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { CoinCalculator } from "@/components/dashboard/CoinCalculator";
+import { WithdrawHistory } from "@/components/dashboard/WithdrawHistory";
 
 const WS_URL = API_CONFIG.wsUrl;
 
@@ -36,24 +45,42 @@ const CARD_TYPES = [
   { type: "humo", label: "Humo" },
   { type: "visa", label: "Visa" },
   { type: "mastercard", label: "Mastercard" },
+  { type: "mir", label: "Mir" },
+  { type: "unionpay", label: "UnionPay" },
+  { type: "maestro", label: "Maestro" },
 ];
 
-export function BalanceTab({
-  userId,
-  currency,
-  balance,
-}: {
-  userId: string;
-  currency: string;
-  balance: number;
-}) {
+const CURRENCIES = [
+  { code: "UZS", name: "So'm" },
+  { code: "USD", name: "Dollar" },
+  { code: "RUB", name: "Rubl" },
+  { code: "EUR", name: "Yevro" },
+  { code: "KZT", name: "Tenge" },
+  { code: "TRY", name: "Turk lira" },
+  { code: "AED", name: "Dirham" },
+  { code: "CNY", name: "Yuan" },
+];
+
+// MOCK: Coin kurslari (1 coin = X valyuta)
+const MOCK_COIN_RATES: Record<string, number> = {
+  UZS: 1200,
+  USD: 0.1,
+  RUB: 9,
+  EUR: 0.09,
+  KZT: 45,
+  TRY: 3.2,
+  AED: 0.36,
+  CNY: 0.7,
+};
+
+export function BalanceTab({ userId, coin }: { userId: string; coin: number }) {
   // Modal holatlari
   const [openDeposit, setOpenDeposit] = useState(false);
   const [openWithdraw, setOpenWithdraw] = useState(false);
 
   // To‘ldirish uchun
   const [amount, setAmount] = useState("");
-  const [country, setCountry] = useState(COUNTRIES[0].code);
+  const [currency, setCurrency] = useState(CURRENCIES[0].code); // To‘ldirish uchun valyuta
   const [cardType, setCardType] = useState(CARD_TYPES[0].type);
   const [step, setStep] = useState<"form" | "wait_card" | "paying" | "done">(
     "form"
@@ -72,6 +99,7 @@ export function BalanceTab({
   >("idle");
   const [withdrawCardNumber, setWithdrawCardNumber] = useState("");
   const [withdrawCardType, setWithdrawCardType] = useState(CARD_TYPES[0].type);
+  const [withdrawCurrency, setWithdrawCurrency] = useState(CURRENCIES[0].code); // Yechishda valyuta
 
   // Tarix uchun (mock yoki WebSocket orqali to‘ldiriladi)
   const [withdrawHistory, setWithdrawHistory] = useState<
@@ -106,6 +134,9 @@ export function BalanceTab({
   const [paymentResponseMsg, setPaymentResponseMsg] = useState<string | null>(
     null
   );
+
+  // Konvertatsiya natijasi uchun state
+  const [convertedAmount, setConvertedAmount] = useState<number | null>(null);
 
   // WebSocket ulanishi
   useEffect(() => {
@@ -163,6 +194,17 @@ export function BalanceTab({
     }
   }, [step, timer]);
 
+  // Coin miqdorini va valyutani kuzatib, natijani hisoblash
+  useEffect(() => {
+    const amountNum = Number(amount);
+    if (!amountNum || amountNum <= 0) {
+      setConvertedAmount(null);
+      return;
+    }
+    const rate = MOCK_COIN_RATES[currency] || 1;
+    setConvertedAmount(amountNum * rate);
+  }, [amount, currency]);
+
   // To‘ldirish so‘rovi
   const handleDepositRequest = (e: React.FormEvent) => {
     e.preventDefault();
@@ -192,15 +234,17 @@ export function BalanceTab({
     e.preventDefault();
     if (!withdrawAmount || Number(withdrawAmount) <= 0)
       return toast.error("Summani kiriting");
-    if (Number(withdrawAmount) > balance)
-      return toast.error("Balansda yetarli mablag‘ yo‘q");
+    if (Number(withdrawAmount) > coin)
+      return toast.error("Balansda yetarli coin yo‘q");
     if (!withdrawCardNumber || withdrawCardNumber.length < 8)
       return toast.error("Karta raqamini to‘g‘ri kiriting");
+    // Bu yerda currency almashtirish uchun serverga yuboriladi
     socketRef.current.emit("withdraw_request", {
       userId,
       amount: withdrawAmount,
       cardNumber: withdrawCardNumber,
       cardType: withdrawCardType,
+      currency: withdrawCurrency,
     });
     setWithdrawStatus("waiting");
   };
@@ -221,16 +265,18 @@ export function BalanceTab({
     <div>
       <Card className="bg-white dark:bg-[#111827] shadow-lg mb-6">
         <CardHeader>
-          <CardTitle className="text-black dark:text-white">
-            Balans:{" "}
-            <span className="text-primary">
-              {balance} {currency}
-            </span>
-          </CardTitle>
-          <CardDescription className="text-gray-600 dark:text-gray-300">
-            Pulingizni to‘ldirish yoki yechish uchun quyidagi tugmalardan
-            foydalaning
-          </CardDescription>
+          <div className="flex items-center gap-2">
+            <div className="flex flex-col gap-10">
+              <CardTitle className="text-black dark:text-white">
+                Balans: <span className="text-primary">{coin} 🟡 </span>
+              </CardTitle>
+              <CardDescription className="text-gray-600 dark:text-gray-300">
+                Coin’ni to‘ldirish yoki yechish uchun quyidagi tugmalardan
+                foydalaning
+              </CardDescription>
+            </div>
+            <CoinCalculator />
+          </div>
         </CardHeader>
         <CardContent>
           <div className="flex gap-4">
@@ -273,14 +319,15 @@ export function BalanceTab({
             setAmount("");
             setAdminCard(null);
             setCheckFile(null);
+            setConvertedAmount(null);
           }
         }}
       >
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Pul to‘ldirish</DialogTitle>
+            <DialogTitle>Coin to‘ldirish</DialogTitle>
             <DialogDescription>
-              Balansingizni to‘ldirish uchun so‘rov yuboring
+              Coin’ni to‘ldirish uchun so‘rov yuboring
             </DialogDescription>
           </DialogHeader>
           {/* paymentResponse xabari */}
@@ -291,7 +338,7 @@ export function BalanceTab({
           )}
           {step === "form" && (
             <form onSubmit={handleDepositRequest} className="space-y-4">
-              <Label>Summani kiriting</Label>
+              <Label>Coin miqdorini kiriting</Label>
               <Input
                 type="number"
                 value={amount}
@@ -299,30 +346,41 @@ export function BalanceTab({
                 min={1}
                 required
               />
-              <Label>Davlat</Label>
-              <select
-                className="border rounded px-2 py-1 w-full"
-                value={country}
-                onChange={(e) => setCountry(e.target.value)}
-              >
-                {COUNTRIES.map((c) => (
-                  <option key={c.code} value={c.code}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+              <Label>Valyuta</Label>
+              <Select value={currency} onValueChange={setCurrency}>
+                <SelectTrigger className="w-full border rounded px-2 py-1">
+                  <SelectValue placeholder="Valyutani tanlang" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CURRENCIES.map((c) => (
+                    <SelectItem key={c.code} value={c.code}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {/* Konvertatsiya natijasi */}
+              {convertedAmount !== null && (
+                <div className="text-sm text-gray-700 dark:text-gray-200">
+                  {amount} coin ≈{" "}
+                  <b>
+                    {convertedAmount} {currency}
+                  </b>
+                </div>
+              )}
               <Label>Karta turi</Label>
-              <select
-                className="border rounded px-2 py-1 w-full"
-                value={cardType}
-                onChange={(e) => setCardType(e.target.value)}
-              >
-                {CARD_TYPES.map((c) => (
-                  <option key={c.type} value={c.type}>
-                    {c.label}
-                  </option>
-                ))}
-              </select>
+              <Select value={cardType} onValueChange={setCardType}>
+                <SelectTrigger className="w-full border rounded px-2 py-1">
+                  <SelectValue placeholder="Karta turini tanlang" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CARD_TYPES.map((c) => (
+                    <SelectItem key={c.type} value={c.type}>
+                      {c.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <DialogFooter>
                 <Button
                   type="submit"
@@ -390,21 +448,37 @@ export function BalanceTab({
       <Dialog open={openWithdraw} onOpenChange={setOpenWithdraw}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Pul yechish</DialogTitle>
+            <DialogTitle>Coin yechish</DialogTitle>
             <DialogDescription>
-              Balansdan pul yechish uchun so‘rov yuboring
+              Coin’ni boshqa valyutaga almashtirib yechish uchun so‘rov yuboring
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleWithdraw} className="space-y-4">
-            <Label>Summani kiriting</Label>
+            <Label>Coin miqdorini kiriting</Label>
             <Input
               type="number"
               value={withdrawAmount}
               onChange={(e) => setWithdrawAmount(e.target.value)}
               min={1}
-              max={balance}
+              max={coin}
               required
             />
+            <Label>Valyuta</Label>
+            <Select
+              value={withdrawCurrency}
+              onValueChange={setWithdrawCurrency}
+            >
+              <SelectTrigger className="w-full border rounded px-2 py-1">
+                <SelectValue placeholder="Valyutani tanlang" />
+              </SelectTrigger>
+              <SelectContent>
+                {CURRENCIES.map((c) => (
+                  <SelectItem key={c.code} value={c.code}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Label>Karta raqami</Label>
             <Input
               type="text"
@@ -417,17 +491,21 @@ export function BalanceTab({
               required
             />
             <Label>Karta turi</Label>
-            <select
-              className="border rounded px-2 py-1 w-full"
+            <Select
               value={withdrawCardType}
-              onChange={(e) => setWithdrawCardType(e.target.value)}
+              onValueChange={setWithdrawCardType}
             >
-              {CARD_TYPES.map((c) => (
-                <option key={c.type} value={c.type}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="w-full border rounded px-2 py-1">
+                <SelectValue placeholder="Karta turini tanlang" />
+              </SelectTrigger>
+              <SelectContent>
+                {CARD_TYPES.map((c) => (
+                  <SelectItem key={c.type} value={c.type}>
+                    {c.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <DialogFooter>
               <Button
                 type="submit"
@@ -450,51 +528,8 @@ export function BalanceTab({
       </Dialog>
 
       {/* Tarix */}
-      <Card className="bg-white dark:bg-[#111827] shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-black dark:text-white">
-            Yechish tarixi
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {withdrawHistory.length === 0 && (
-              <p className="text-gray-600 dark:text-gray-300">Tarix yo‘q</p>
-            )}
-            {withdrawHistory.map((item) => (
-              <div
-                key={item.id}
-                className="flex flex-col border-b pb-4 last:border-0 last:pb-0"
-              >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="font-medium text-black dark:text-white">
-                      {item.amount} {currency}
-                    </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                      {formatDate(item.date)}
-                    </p>
-                    <p className="text-xs text-gray-600 dark:text-gray-300">
-                      {item.card}
-                    </p>
-                  </div>
-                  <div
-                    className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs ${
-                      item.status === "processed"
-                        ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
-                        : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100"
-                    }`}
-                  >
-                    {item.status === "processed"
-                      ? "Tasdiqlangan"
-                      : "Kutilmoqda"}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+
+      <WithdrawHistory history={withdrawHistory} currency={currency} />
     </div>
   );
 }

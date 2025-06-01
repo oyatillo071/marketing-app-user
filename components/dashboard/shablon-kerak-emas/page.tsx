@@ -17,12 +17,12 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
-import { useLanguage } from "@/components/language-provider";
-import { CardManagement } from "@/components/card-management";
+import { useLanguage } from "@/components/providers/language-provider";
+import { CardManagement } from "@/components/profile/card-management";
 import { ChangePassword } from "@/components/profile/change-password";
 import { AvatarUpload } from "@/components/profile/avatar-upload";
-import { EarningsChart } from "@/components/earnings-chart";
-import { ReferralShare } from "@/components/referral-share";
+import { EarningsChart } from "@/components/dashboard/earnings-chart";
+import { ReferralShare } from "@/components/dashboard/referral-share";
 import { formatCurrency } from "@/lib/utils";
 
 // Mock user data

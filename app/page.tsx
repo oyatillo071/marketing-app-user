@@ -1,51 +1,60 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { Card, CardContent, CardFooter } from "@/components/ui/card"
-import { Star, Users, TrendingUp, CheckCircle, ArrowRight, Sparkles, Loader2 } from "lucide-react"
-import { useLanguage } from "@/components/language-provider"
-import { formatCurrency } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { fetchProducts } from "@/lib/api"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Star,
+  Users,
+  TrendingUp,
+  CheckCircle,
+  ArrowRight,
+  Sparkles,
+  Loader2,
+} from "lucide-react";
+import { useLanguage } from "@/components/providers/language-provider";
+import { formatCurrency } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { fetchProducts } from "@/lib/api";
 
 // Types
-type ProductPhoto = { id: number; productId: number; photo_url: string }
+type ProductPhoto = { id: number; productId: number; photo_url: string };
 type ProductTranslation = {
-  id: number
-  product_id: number
-  language: string
-  name: string
-  description: string
-  longDescription?: string
-  features?: string
-  usage?: string
-}
+  id: number;
+  product_id: number;
+  language: string;
+  name: string;
+  description: string;
+  longDescription?: string;
+  features?: string;
+  usage?: string;
+};
 type ProductPrice = {
-  id: number
-  product_id: number
-  currency: string
-  value: number
-}
+  id: number;
+  product_id: number;
+  currency: string;
+  value: number;
+};
 type Product = {
-  id: number
-  rating: number
-  rewiev: number
-  photo_url: ProductPhoto[]
-  translations: ProductTranslation[]
-  prices: ProductPrice[]
-  category?: string
-}
+  coin: number | string | null;
+  id: number;
+  rating: number;
+  rewiev: number;
+  photo_url: ProductPhoto[];
+  translations: ProductTranslation[];
+  prices?: ProductPrice[];
+  category?: string;
+};
 
-type Stat = { label: string; value: string }
+type Stat = { label: string; value: string };
 
 // Stats data
 const stats: Stat[] = [
   { label: "activePartners", value: "12,500+" },
   { label: "productsSold", value: "320,000+" },
   { label: "countries", value: "18" },
-]
+];
 
 const features = [
   {
@@ -63,26 +72,29 @@ const features = [
     title: "qualityProducts",
     desc: "offerCertified",
   },
-]
+];
 
 // Translation helper
-function getTranslation(translations: ProductTranslation[], language: string): ProductTranslation {
+function getTranslation(
+  translations: ProductTranslation[],
+  language: string
+): ProductTranslation {
   return (
     translations.find((t) => t.language === language) ||
     translations.find((t) => t.language === "en") ||
     translations[0]
-  )
+  );
 }
 
 // Narx helper: avval hozirgi til valyutasi, yo‘q bo‘lsa USD, yo‘q bo‘lsa birinchi narx
 function getPrice(prices: ProductPrice[], currency: string) {
   // Avval to'g'ri valyutani topamiz
-  let price =
-    prices.find((p) => p.currency.toLowerCase() === currency.toLowerCase()) ||
+  let price = prices.find(
+    (p) => p.currency.toLowerCase() === currency.toLowerCase()
+  ) ||
     prices.find((p) => p.currency.toUpperCase() === "USD") ||
     prices.find((p) => p.currency.toUpperCase() === "UZS") ||
-    prices[0] ||
-    { value: 0, currency: "USD" };
+    prices[0] || { value: 0, currency: "USD" };
 
   // formatCurrency faqat to'g'ri valyutani qabul qiladi
   let supportedCurrency = ["USD", "UZS", "EUR", "RUB"];
@@ -94,27 +106,29 @@ function getPrice(prices: ProductPrice[], currency: string) {
 }
 
 export default function Home() {
-  const { t, language, currency } = useLanguage()
-  const [mounted, setMounted] = useState(false)
-  const [products, setProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState(true)
+  const { t, language, currency } = useLanguage();
+  const [mounted, setMounted] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
-    setLoading(true)
+    setLoading(true);
     fetchProducts()
       .then((data) => setProducts(data.slice(0, 6)))
-      .finally(() => setLoading(false))
-  }, [])
+      .finally(() => setLoading(false));
+  }, []);
 
   if (!mounted) {
-    return <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-[#181f2a] dark:to-[#232946]" />
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-[#181f2a] dark:to-[#232946]" />
+    );
   }
 
-  const filteredProducts = products
+  const filteredProducts = products;
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-[#181f2a] dark:to-[#232946]">
@@ -137,7 +151,9 @@ export default function Home() {
               <div className="lg:w-1/2 space-y-8" data-aos="fade-right">
                 <div className="inline-flex items-center px-4 py-2 bg-white/80 dark:bg-[#232946]/80 backdrop-blur-sm rounded-full border border-blue-200 dark:border-[#232946] shadow-sm">
                   <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400 mr-2" />
-                  <span className="text-sm font-medium text-blue-800 dark:text-blue-200">{t("activePartners")} 12,500+</span>
+                  <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                    {t("activePartners")} 12,500+
+                  </span>
                 </div>
 
                 <h1 className="text-5xl lg:text-7xl font-bold leading-tight">
@@ -146,7 +162,9 @@ export default function Home() {
                   </span>
                 </h1>
 
-                <p className="text-xl text-gray-600 dark:text-gray-300 leading-relaxed max-w-2xl">{t("heroSubtitle")}</p>
+                <p className="text-xl text-gray-600 dark:text-gray-300 leading-relaxed max-w-2xl">
+                  {t("heroSubtitle")}
+                </p>
 
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Button
@@ -170,7 +188,10 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="lg:w-1/2 flex justify-center" data-aos="fade-left">
+              <div
+                className="lg:w-1/2 flex justify-center"
+                data-aos="fade-left"
+              >
                 <div className="relative">
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-500 rounded-3xl blur-2xl opacity-30 animate-pulse" />
                   <Image
@@ -190,7 +211,10 @@ export default function Home() {
         {/* Stats Section */}
         <section className="py-16 bg-white/60 dark:bg-[#232946]/60 backdrop-blur-md border-y border-white/20 dark:border-[#232946]/40">
           <div className="container mx-auto max-w-6xl">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8" data-aos="fade-up">
+            <div
+              className="grid grid-cols-1 md:grid-cols-3 gap-8"
+              data-aos="fade-up"
+            >
               {stats.map((stat, i) => (
                 <div
                   key={stat.label}
@@ -201,7 +225,9 @@ export default function Home() {
                   <div className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-purple-400 mb-2">
                     {stat.value}
                   </div>
-                  <div className="text-gray-600 dark:text-gray-300 font-medium">{t(stat.label)}</div>
+                  <div className="text-gray-600 dark:text-gray-300 font-medium">
+                    {t(stat.label)}
+                  </div>
                 </div>
               ))}
             </div>
@@ -228,8 +254,12 @@ export default function Home() {
                   <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 w-fit group-hover:scale-110 transition-transform duration-300">
                     {feature.icon}
                   </div>
-                  <h3 className="text-2xl font-bold mb-4 text-gray-800 dark:text-white">{t(feature.title)}</h3>
-                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed">{t(feature.desc)}</p>
+                  <h3 className="text-2xl font-bold mb-4 text-gray-800 dark:text-white">
+                    {t(feature.title)}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                    {t(feature.desc)}
+                  </p>
                 </div>
               ))}
             </div>
@@ -261,9 +291,13 @@ export default function Home() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {filteredProducts.map((product, index) => {
-                  const translation = getTranslation(product.translations, language)
-                  const priceObj = getPrice(product.prices, currency)
-                  const imageUrl = product.photo_url?.[0]?.photo_url || "/placeholder.svg"
+                  const translation = getTranslation(
+                    product.translations,
+                    language
+                  );
+                  // const priceObj = getPrice(product.prices, currency);
+                  const imageUrl =
+                    product.photo_url?.[0]?.photo_url || "/placeholder.svg";
 
                   return (
                     <Card
@@ -281,7 +315,8 @@ export default function Home() {
                         />
                         <div className="absolute top-4 right-4 bg-white/90 dark:bg-[#232946]/90 backdrop-blur-sm text-blue-600 dark:text-blue-200 text-xs font-semibold px-3 py-1 rounded-full shadow-lg">
                           {product.category
-                            ? product.category.charAt(0).toUpperCase() + product.category.slice(1)
+                            ? product.category.charAt(0).toUpperCase() +
+                              product.category.slice(1)
                             : ""}
                         </div>
                         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -289,15 +324,22 @@ export default function Home() {
 
                       <CardContent className="p-6">
                         <div className="flex justify-between items-start mb-3">
-                          <h3 className="font-bold text-lg text-gray-800 dark:text-white line-clamp-2">{translation.name}</h3>
+                          <h3 className="font-bold text-lg text-gray-800 dark:text-white line-clamp-2">
+                            {translation.name}
+                          </h3>
                           <div className="flex items-center bg-yellow-50 dark:bg-yellow-900 px-2 py-1 rounded-full">
                             <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                            <span className="ml-1 text-sm font-medium text-yellow-700 dark:text-yellow-300">{product.rating}</span>
+                            <span className="ml-1 text-sm font-medium text-yellow-700 dark:text-yellow-300">
+                              {product.rating}
+                            </span>
                           </div>
                         </div>
-                        <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2">{translation.description}</p>
+                        <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2">
+                          {translation.description}
+                        </p>
                         <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-purple-400">
-                          {formatCurrency(priceObj.value, priceObj.currency || currency)}
+                          {/* {formatCurrency(priceObj.value, priceObj.currency || currency)} */}
+                          {product.coin || "-"}
                         </div>
                       </CardContent>
 
@@ -313,7 +355,7 @@ export default function Home() {
                         </Button>
                       </CardFooter>
                     </Card>
-                  )
+                  );
                 })}
               </div>
             )}
@@ -330,7 +372,10 @@ export default function Home() {
           </div>
 
           <div className="container mx-auto max-w-4xl relative z-10 text-center px-4">
-            <h2 className="text-4xl lg:text-6xl font-bold text-white mb-6 leading-tight" data-aos="fade-up">
+            <h2
+              className="text-4xl lg:text-6xl font-bold text-white mb-6 leading-tight"
+              data-aos="fade-up"
+            >
               {t("readyToStart")}
             </h2>
             <p
@@ -356,5 +401,5 @@ export default function Home() {
         </section>
       </div>
     </div>
-  )
+  );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useLanguage } from "@/components/language-provider";
+import { useLanguage } from "@/components/providers/language-provider";
 import { Mail, Phone } from "lucide-react";
 import { FaTelegramPlane, FaWhatsapp } from "react-icons/fa";
 

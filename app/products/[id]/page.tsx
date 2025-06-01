@@ -4,13 +4,28 @@ import { useRef, useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ShoppingCart, Star, ChevronRight, Heart, X, ChevronLeft } from "lucide-react";
+import {
+  ShoppingCart,
+  Star,
+  ChevronRight,
+  Heart,
+  X,
+  ChevronLeft,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
-import { useLanguage } from "@/components/language-provider";
+import { useLanguage } from "@/components/providers/language-provider";
 import { fetchProductById, fetchProducts } from "@/lib/api";
+import { CoinPrice } from "@/components/products/CoinPrice";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 type ProductTranslation = {
   id: number;
@@ -33,8 +48,9 @@ type ProductPrice = {
 type Product = {
   id: number;
   rating: number;
+  coin: number | null;
   rewiev: number;
-  photo_url: { photo_url: string }[]; // to'g'ri!
+  photo_url: { photo_url: string }[];
   translations: ProductTranslation[];
   prices: ProductPrice[];
 };
@@ -53,6 +69,7 @@ export default function ProductDetailPage() {
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalImageIndex, setModalImageIndex] = useState(0);
+  const [wishlistModalOpen, setWishlistModalOpen] = useState(false);
 
   // Zoom uchun state
   const [zoomed, setZoomed] = useState(false);
@@ -60,24 +77,20 @@ export default function ProductDetailPage() {
   const [dragging, setDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0 });
   const panStart = useRef({ x: 0, y: 0 });
-// TODO:fix response in this page
+  // TODO:fix response in this page
 
   // Helper: get translation by language, fallback to 'en' or first
   const getTranslation = (translations: ProductTranslation[]) => {
     return (
       translations.find((t) => t.language === language) ||
       translations.find((t) => t.language === "en") ||
-      translations[0] ||
-      { name: "", description: "", longDescription: "", features: "", usage: "" }
-    );
-  };
-
-  // Helper: get price by currency, fallback to first
-  const getPrice = (prices: ProductPrice[]) => {
-    return (
-      prices.find((p) => p.currency === currency) ||
-      prices[0] ||
-      { value: 0, currency: "" }
+      translations[0] || {
+        name: "",
+        description: "",
+        longDescription: "",
+        features: "",
+        usage: "",
+      }
     );
   };
 
@@ -102,7 +115,6 @@ export default function ProductDetailPage() {
   }, [productId]);
 
   const translation = product ? getTranslation(product.translations) : null;
-  const priceObj = product ? getPrice(product.prices) : null;
 
   const handleAddToCart = () => {
     toast({
@@ -195,6 +207,9 @@ export default function ProductDetailPage() {
     );
   };
 
+  const isLoggedIn =
+    typeof window !== "undefined" && localStorage.getItem("mlm_token");
+
   if (loading) {
     return (
       <div className="container mx-auto p-4 md:p-8 flex justify-center items-center min-h-[60vh]">
@@ -206,10 +221,18 @@ export default function ProductDetailPage() {
   if (!product || !translation) {
     return (
       <div className="container mx-auto p-4 md:p-8 text-center min-h-[60vh] flex flex-col items-center justify-center">
-        <h1 className="text-2xl font-bold mb-4">{t ? t("productNotFound") : "Product not found"}</h1>
-        <p className="mb-6 text-muted-foreground">{t ? t("productNotFoundDesc") : "The product you are looking for does not exist."}</p>
+        <h1 className="text-2xl font-bold mb-4">
+          {t ? t("productNotFound") : "Product not found"}
+        </h1>
+        <p className="mb-6 text-muted-foreground">
+          {t
+            ? t("productNotFoundDesc")
+            : "The product you are looking for does not exist."}
+        </p>
         <Button asChild>
-          <Link href="/products">{t ? t("backToProducts") : "Back to products"}</Link>
+          <Link href="/products">
+            {t ? t("backToProducts") : "Back to products"}
+          </Link>
         </Button>
       </div>
     );
@@ -250,27 +273,32 @@ export default function ProductDetailPage() {
           </div>
           <div className="grid grid-cols-4 gap-2">
             {/* Thumbnaillar */}
-            {(product.photo_url.length > 0 ? product.photo_url : [{ photo_url: "/placeholder.svg" }]).map(
-              (imageObj, index) => (
-                <div
-                  key={index}
-                  className={`relative aspect-square rounded-md overflow-hidden cursor-pointer border-2 ${
-                    activeImageIndex === index ? "border-primary" : "border-transparent"
-                  }`}
-                  onClick={() => {
-                    setActiveImageIndex(index);
-                    openModal(index);
-                  }}
-                >
-                  <Image
-                    src={imageObj.photo_url ? imageObj.photo_url : "/placeholder.svg"}
-                    alt={`${translation.name} thumbnail ${index + 1}`}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              )
-            )}
+            {(product.photo_url.length > 0
+              ? product.photo_url
+              : [{ photo_url: "/placeholder.svg" }]
+            ).map((imageObj, index) => (
+              <div
+                key={index}
+                className={`relative aspect-square rounded-md overflow-hidden cursor-pointer border-2 ${
+                  activeImageIndex === index
+                    ? "border-primary"
+                    : "border-transparent"
+                }`}
+                onClick={() => {
+                  setActiveImageIndex(index);
+                  openModal(index);
+                }}
+              >
+                <Image
+                  src={
+                    imageObj.photo_url ? imageObj.photo_url : "/placeholder.svg"
+                  }
+                  alt={`${translation.name} thumbnail ${index + 1}`}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            ))}
           </div>
         </div>
 
@@ -287,13 +315,16 @@ export default function ProductDetailPage() {
             {/* Category field yo‘q, kerak bo‘lsa qo‘shing */}
           </div>
 
+          {/* Narxni ko‘rsatish (asosiy mahsulot uchun) */}
           <p className="text-3xl font-bold mb-6">
-            {priceObj && priceObj.value !== undefined && priceObj.currency !== undefined
-              ? `${priceObj.value} ${priceObj.currency}`
+            {product?.coin !== null && product?.coin !== undefined
+              ? `${product?.coin} coin`
               : ""}
           </p>
 
-          <p className="mb-6 text-muted-foreground">{translation.description}</p>
+          <p className="mb-6 text-muted-foreground">
+            {translation.description}
+          </p>
 
           <div className="mb-6">
             <label className="block text-sm font-medium mb-2">
@@ -322,14 +353,34 @@ export default function ProductDetailPage() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 mb-8">
-            <Button className="flex-1" onClick={handleAddToCart}>
-              <ShoppingCart className="mr-2 h-4 w-4" />
-              {t ? t("addToCart") : "Add to cart"}
-            </Button>
-            <Button variant="outline" onClick={handleAddToWishlist}>
-              <Heart className="mr-2 h-4 w-4" />
-              {t ? t("addToWishlist") : "Add to wishlist"}
-            </Button>
+            {isLoggedIn ? (
+              <Button className="flex-1" onClick={handleAddToCart}>
+                <ShoppingCart className="mr-2 h-4 w-4" />
+                {t ? t("addToCart") : "Add to cart"}
+              </Button>
+            ) : (
+              <Button
+                className="flex-1"
+                variant="outline"
+                onClick={() => router.push("/login")}
+              >
+                {t ? t("loginForBuy") : "Login for buy"}
+              </Button>
+            )}
+            {isLoggedIn ? (
+              <Button variant="outline" onClick={handleAddToWishlist}>
+                <Heart className="mr-2 h-4 w-4" />
+                {t ? t("addToWishlist") : "Add to wishlist"}
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                onClick={() => setWishlistModalOpen(true)}
+              >
+                <Heart className="mr-2 h-4 w-4" />
+                {t ? t("addToWishlist") : "Add to wishlist"}
+              </Button>
+            )}
           </div>
 
           <Card>
@@ -339,8 +390,12 @@ export default function ProductDetailPage() {
                   <TabsTrigger value="description">
                     {t ? t("description") : "Description"}
                   </TabsTrigger>
-                  <TabsTrigger value="features">{t ? t("features") : "Features"}</TabsTrigger>
-                  <TabsTrigger value="usage">{t ? t("usage") : "Usage"}</TabsTrigger>
+                  <TabsTrigger value="features">
+                    {t ? t("features") : "Features"}
+                  </TabsTrigger>
+                  <TabsTrigger value="usage">
+                    {t ? t("usage") : "Usage"}
+                  </TabsTrigger>
                 </TabsList>
                 <TabsContent value="description" className="mt-0">
                   <p>{translation.longDescription}</p>
@@ -348,9 +403,9 @@ export default function ProductDetailPage() {
                 <TabsContent value="features" className="mt-0">
                   <ul className="list-disc pl-5 space-y-1">
                     {translation.features
-                      ? translation.features.split("\n").map((feature, idx) => (
-                          <li key={idx}>{feature}</li>
-                        ))
+                      ? translation.features
+                          .split("\n")
+                          .map((feature, idx) => <li key={idx}>{feature}</li>)
                       : null}
                   </ul>
                 </TabsContent>
@@ -397,9 +452,7 @@ export default function ProductDetailPage() {
               <ChevronRight className="h-6 w-6 text-black" />
             </button>
             {/* Rasm */}
-            <div
-              className="relative w-[90vw] h-[90vw] max-w-3xl max-h-[90vh] bg-transparent rounded-xl overflow-hidden flex items-center justify-center"
-            >
+            <div className="relative w-[90vw] h-[90vw] max-w-3xl max-h-[90vh] bg-transparent rounded-xl overflow-hidden flex items-center justify-center">
               <Image
                 fill
                 src={
@@ -426,8 +479,8 @@ export default function ProductDetailPage() {
                   ? t("tapToExitZoom")
                   : "Drag to move, tap again to exit zoom"
                 : t
-                  ? t("tapToZoom")
-                  : "Tap to zoom"}
+                ? t("tapToZoom")
+                : "Tap to zoom"}
             </div>
           </div>
         </div>
@@ -435,11 +488,14 @@ export default function ProductDetailPage() {
 
       {relatedProducts.length > 0 && (
         <div className="mb-12">
-          <h2 className="text-2xl font-bold mb-6">{t ? t("relatedProducts") : "Related products"}</h2>
+          <h2 className="text-2xl font-bold mb-6">
+            {t ? t("relatedProducts") : "Related products"}
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {relatedProducts.map((relatedProduct) => {
-              const relTranslation = getTranslation(relatedProduct.translations);
-              const relPrice = getPrice(relatedProduct.prices);
+              const relTranslation = getTranslation(
+                relatedProduct.translations
+              );
               return (
                 <Card
                   key={relatedProduct.id}
@@ -465,7 +521,10 @@ export default function ProductDetailPage() {
                     </h3>
                     <div className="flex justify-between items-center">
                       <p className="font-bold text-primary">
-                        {relPrice.value} {relPrice.currency}
+                        {relatedProduct?.coin !== null &&
+                        relatedProduct?.coin !== undefined
+                          ? `${relatedProduct?.coin} coin`
+                          : ""}
                       </p>
                       <div className="flex items-center">
                         <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
@@ -486,6 +545,38 @@ export default function ProductDetailPage() {
           </div>
         </div>
       )}
+
+      <Dialog open={wishlistModalOpen} onOpenChange={setWishlistModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {t ? t("loginRequired") : "Login required"}
+            </DialogTitle>
+          </DialogHeader>
+          <p className="mb-4">
+            {t
+              ? t("loginForWishlistDesc")
+              : "Sevimlilar ro‘yxatiga qo‘shish uchun avval tizimga kiring."}
+          </p>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setWishlistModalOpen(false)}
+            >
+              {t ? t("cancel") : "Cancel"}
+            </Button>
+            <Button
+              className="bg-primary text-white"
+              onClick={() => {
+                setWishlistModalOpen(false);
+                router.push("/login");
+              }}
+            >
+              {t ? t("login") : "Login"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

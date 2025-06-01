@@ -1,10 +1,15 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Check, ChevronDown, Globe } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { useLanguage } from "@/components/language-provider"
+import { useState } from "react";
+import { Check, ChevronDown, Globe } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useLanguage } from "@/components/providers/language-provider";
 
 const languages = [
   { code: "en", name: "English", flag: "🇺🇸" },
@@ -14,20 +19,22 @@ const languages = [
   { code: "kg", name: "Кыргызча", flag: "🇰🇬" },
   { code: "tj", name: "Тоҷикӣ", flag: "🇹🇯" },
   { code: "cn", name: "中文", flag: "🇨🇳" },
-]
+];
 
 export function LanguageSwitcher() {
-  const { language, setLanguage } = useLanguage()
-  const [open, setOpen] = useState(false)
+  const { language, setLanguage } = useLanguage();
+  const [open, setOpen] = useState(false);
 
-  const currentLanguage = languages.find((lang) => lang.code === language)
+  const currentLanguage = languages.find((lang) => lang.code === language);
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className="h-8 gap-1">
           <Globe className="h-4 w-4" />
-          <span className="hidden sm:inline-block">{currentLanguage?.flag}</span>
+          <span className="hidden sm:inline-block">
+            {currentLanguage?.flag}
+          </span>
           <ChevronDown className="h-4 w-4 opacity-50" />
         </Button>
       </DropdownMenuTrigger>
@@ -36,8 +43,8 @@ export function LanguageSwitcher() {
           <DropdownMenuItem
             key={lang.code}
             onClick={() => {
-              setLanguage(lang.code as any)
-              setOpen(false)
+              setLanguage(lang.code as any);
+              setOpen(false);
             }}
             className="flex items-center justify-between"
           >
@@ -49,5 +56,5 @@ export function LanguageSwitcher() {
         ))}
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }

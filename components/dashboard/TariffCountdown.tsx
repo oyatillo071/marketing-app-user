@@ -1,5 +1,5 @@
 "use client";
-import { useLanguage } from "@/components/language-provider";
+import { useLanguage } from "@/components/providers/language-provider";
 import { useEffect, useState } from "react";
 
 export function TariffCountdown({
