@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { fetchCoinPrice } from "@/lib/api";
 
 export type CoinRates = Record<string, number>;
 
@@ -50,17 +51,34 @@ export function CoinCalculator({
   const [converted, setConverted] = useState<number | null>(null);
   const [coinRates, setCoinRates] = useState<CoinRates>(MOCK_COIN_RATES);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Kurslarni backenddan olish
   useEffect(() => {
     setLoading(true);
-    fetch("/api/coin-rates")
-      .then((res) => (res.ok ? res.json() : Promise.reject()))
+    setError(null);
+    fetchCoinPrice()
       .then((data) => {
-        setCoinRates(data);
+        // Agar data bo'sh massiv bo'lsa yoki object emas bo'lsa
+        if (
+          !data ||
+          (Array.isArray(data) && data.length === 0) ||
+          (typeof data === "object" && Object.keys(data).length === 0)
+        ) {
+          setError(
+            "Kurslar vaqtincha mavjud emas. Iltimos, keyinroq yana urinib ko‘ring. Uzr so‘raymiz."
+          );
+          setCoinRates(MOCK_COIN_RATES);
+        } else {
+          setCoinRates(data);
+        }
       })
-      .catch(() => {
-        setCoinRates(MOCK_COIN_RATES); // fallback
+      .catch((error) => {
+        console.error("Kurslarni olishda xatolik:", error);
+        setError(
+          "Kurslarni olishda xatolik yuz berdi. Iltimos, keyinroq yana urinib ko‘ring. Uzr so‘raymiz."
+        );
+        setCoinRates(MOCK_COIN_RATES);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -118,7 +136,13 @@ export function CoinCalculator({
           </div>
         )}
 
-        {converted !== null && !loading && (
+        {error && !loading && (
+          <div className="text-sm text-red-600 dark:text-red-400">
+            {error}
+          </div>
+        )}
+
+        {converted !== null && !loading && !error && (
           <div className="text-base font-medium text-gray-800 dark:text-gray-100">
             <span className="text-gray-600 dark:text-gray-400">
               {amount} coin ≈
