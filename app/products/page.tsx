@@ -193,7 +193,7 @@ export default function ProductsPage() {
             </div>
           ) : filteredProducts.length > 0 ? (
             <div
-              className={`grid gap-8 ${
+              className={`flex gap-8 ${
                 viewMode === "grid"
                   ? "grid-cols-2   md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 "
                   : "grid-cols-1"

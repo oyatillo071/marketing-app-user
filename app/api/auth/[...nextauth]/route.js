@@ -1,34 +1,56 @@
+// auth.ts (yoki route handler)
 import NextAuth from "next-auth";
-import GoogleProvider from "next-auth/providers/google";
-import FacebookProvider from "next-auth/providers/facebook";
+import CredentialsProvider from "next-auth/providers/credentials";
 
-const handler = NextAuth({
+export const {
+  handlers: { GET, POST },
+  auth,
+} = NextAuth({
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    }),
-    FacebookProvider({
-      clientId: process.env.FACEBOOK_CLIENT_ID,
-      clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+    CredentialsProvider({
+      id: "credentials",
+      name: "Custom Google",
+      credentials: {
+        token: { label: "Token", type: "text" },
+      },
+      async authorize(credentials) {
+        const res = await fetch(
+          "https://mlm-backend.pixl.uz/authorization/user",
+          {
+            headers: {
+              Authorization: `Bearer ${credentials.token}`,
+            },
+          }
+        );
+
+        if (!res.ok) return null;
+
+        const user = await res.json();
+        if (user) {
+          return user;
+        }
+
+        return null;
+      },
     }),
   ],
-  debug: true,
-  secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
-    async signIn({ user, account, profile, email, credentials }) {
-      console.log(user, account, profile, email, credentials, "20qator");
-
-      console.log("User signed in:", user);
-      return true;
+    async session({ session, token }) {
+      if (token?.id) {
+        session.user.id = token.id;
+      }
+      return session;
     },
-    async signOut({ token }) {
-      console.log("User signed out:", token);
-    },
-    async error({ error }) {
-      console.error("NextAuth Error:", error);
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
     },
   },
+  pages: {
+    signIn: "/", // Login sahifasi
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+  debug: true,
 });
-
-export { handler as GET, handler as POST };

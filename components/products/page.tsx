@@ -23,7 +23,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <div
-      className="relative flex flex-col gap-3 justify-around rounded-md shadow-sm hover:shadow-md transition-all duration-300   border-gray-200 dark:border-gray-700 w-full max-w-sm overflow-hidden group cursor-pointer"
+      className="relative flex flex-col gap-3 justify-around rounded-md shadow-sm hover:shadow-md transition-all duration-300 border-gray-200 dark:border-gray-700 w-full max-w-[365px] overflow-hidden group cursor-pointer"
       onClick={() => router.push(`/products/${product.id}`)}
     >
       {/* Like button */}
