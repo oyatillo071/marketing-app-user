@@ -3,48 +3,52 @@
 import { Button } from "@/components/ui/button";
 import { Facebook, Mail } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
-import { signIn } from "next-auth/react";
+
 interface AuthProvidersProps {
   onEmailClick: () => void;
 }
 
 export function AuthProviders({ onEmailClick }: AuthProvidersProps) {
   const handleGoogleLogin = () => {
-    // In a real app, this would redirect to Google OAuth
-    console.log("Google login clicked");
+    window.location.href = "https://mlm-backend.pixl.uz/authorization/google";
   };
 
   const handleFacebookLogin = () => {
-    // In a real app, this would redirect to Facebook OAuth
-    console.log("Facebook login clicked");
+    window.location.href = "https://mlm-backend.pixl.uz/authorization/facebook";
   };
 
   return (
     <div className="flex flex-col space-y-3">
       <Button
         variant="outline"
-        onClick={() => signIn("google")}
+        onClick={handleGoogleLogin}
         className="flex items-center gap-2"
+        aria-label="Sign in with Google"
       >
         <FcGoogle className="h-5 w-5" />
         Continue with Google
       </Button>
+
       <Button
         variant="outline"
-        onClick={() => signIn("facebook")}
+        onClick={handleFacebookLogin}
         className="flex items-center gap-2"
+        aria-label="Sign in with Facebook"
       >
         <Facebook className="h-5 w-5 text-blue-600" />
         Continue with Facebook
       </Button>
+
       <Button
         variant="outline"
         onClick={onEmailClick}
         className="flex items-center gap-2"
+        aria-label="Continue with Email"
       >
         <Mail className="h-5 w-5" />
         Continue with Email
       </Button>
+
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
           <span className="w-full border-t" />

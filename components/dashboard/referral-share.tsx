@@ -47,7 +47,7 @@ export function ReferralShare() {
     }
     // API_CONFIG.baseUrl dan referral link yasash
     if (userId) {
-      setReferralLink(`${API_CONFIG.baseUrl.replace(/\/$/, "")}/ref/${userId}`);
+      setReferralLink(`${API_CONFIG.baseSiteUrl.replace(/\/$/, "")}/ref/${userId}`);
     }
   }, []);
 

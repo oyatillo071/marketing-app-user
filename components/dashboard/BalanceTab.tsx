@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/select";
 import { CoinCalculator } from "@/components/dashboard/CoinCalculator";
 import { WithdrawHistory } from "@/components/dashboard/WithdrawHistory";
+import { uploadCheckFile } from "@/lib/api";
 
 const WS_URL = API_CONFIG.wsUrl;
 
@@ -181,6 +182,10 @@ export function BalanceTab({ userId, coin }: { userId: string; coin: number }) {
       }
     );
 
+    socketRef.current.on("disconnect", () => {
+      toast.error("Aloqa uzildi. Iltimos, sahifani yangilang yoki kuting.");
+    });
+
     return () => {
       socketRef.current.disconnect();
     };
@@ -217,16 +222,21 @@ export function BalanceTab({ userId, coin }: { userId: string; coin: number }) {
   };
 
   // Chek yuklash
-  const handleCheckUpload = () => {
+  const handleCheckUpload = async () => {
     if (!checkFile) return toast.error("Chekni yuklang");
-    const reader = new FileReader();
-    reader.onload = () => {
+    try {
+      toast.loading("Fayl yuklanmoqda...");
+      const url = await uploadCheckFile(checkFile);
       socketRef.current.emit("upload_screenshot", {
-        screenshotUrl: reader.result, // Faylni base64 ko‘rinishda yuboriladi
+        screenshotUrl: url,
       });
-      setStep("wait_card");
-    };
-    reader.readAsDataURL(checkFile);
+      setStep("wait_card"); // Modal yopilmaydi, step wait_card bo‘ladi
+      toast.dismiss();
+      toast.success("Chek yuborildi! Admin tasdiqlashini kuting.");
+    } catch (err) {
+      toast.dismiss();
+      toast.error("Fayl yuklashda xatolik. Keyinroq urinib ko‘ring.");
+    }
   };
 
   // Pul yechish so‘rovi
@@ -393,7 +403,7 @@ export function BalanceTab({ userId, coin }: { userId: string; coin: number }) {
           )}
           {step === "wait_card" && (
             <div className="text-center py-8">
-              <p>Admin kartani yuborishini kuting...</p>
+              <p>Admin tasdiqlashini kuting...</p>
               <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto mt-4"></div>
             </div>
           )}

@@ -135,6 +135,7 @@ export default function DailyBonus() {
                   )}
                 </div>
               </div>
+
             </div>
             <Button
               onClick={fetchDailyBonus}
@@ -183,6 +184,7 @@ export default function DailyBonus() {
                     <Gift className="h-5 w-5 text-primary" />
                   </div>
                 ))}
+
               </div>
             ) : (
               <p className="text-gray-600 dark:text-gray-300">
