@@ -51,10 +51,11 @@ export default function DailyBonus() {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          // Add authentication headers if required (e.g., Bearer token from localStorage)
-          // "Authorization": `Bearer ${localStorage.getItem("mlm_token")}`,
+          Authorization: `Bearer ${localStorage.getItem("mlm_token")}`,
         },
       });
+
+      console.log(response);
 
       if (!response.ok) {
         throw new Error("Failed to fetch daily bonus");
@@ -75,16 +76,27 @@ export default function DailyBonus() {
     }
   };
 
-  // Format date for display
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat("default", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(date);
+  console.log(bonusHistory);
+  console.log(currentBonus);
+
+  // Format date for display with validation and locale support
+  const formatDate = (dateString: string): string => {
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return t("invalidDate");
+      }
+      return new Intl.DateTimeFormat(t("locale") || "default", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: "UTC", // Use UTC to avoid timezone issues
+      }).format(date);
+    } catch {
+      return t("invalidDate");
+    }
   };
 
   return (
@@ -137,9 +149,7 @@ export default function DailyBonus() {
               {isLoading ? t("claiming") : t("claimBonus")}
             </Button>
             <p className="text-sm text-gray-600 dark:text-gray-300">
-              {
-                "Click the Get Bonus button and receive one of your daily bonuses."
-              }
+              {t("dailyBonusDescription")}
             </p>
           </CardContent>
         </Card>
@@ -154,9 +164,9 @@ export default function DailyBonus() {
           <CardContent>
             {bonusHistory.length > 0 ? (
               <div className="space-y-4">
-                {bonusHistory.map((bonus) => (
+                {bonusHistory.map((bonus, idx) => (
                   <div
-                    key={bonus.id}
+                    key={`${bonus.id}-${bonus.date}-${idx}`}
                     className="flex justify-between items-center border-b pb-2 last:border-b-0"
                   >
                     <div>

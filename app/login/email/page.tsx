@@ -53,6 +53,7 @@ export default function EmailLoginPage() {
     try {
       const data = await loginUser(email, password);
       toast.info("Login successful");
+      localStorage.setItem("token", data.token);
       setIsLoading(false);
       router.push("/dashboard");
     } catch (error: any) {
