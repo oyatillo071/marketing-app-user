@@ -183,6 +183,46 @@ export default function DailyBonus() {
                     <Gift className="h-5 w-5 text-primary" />
                   </div>
                 ))}
+
+            )}
+          </div>
+        </TabsContent>
+        <TabsContent value="bonus">
+          <div className="flex flex-col items-center gap-6 p-8 bg-gradient-to-br from-green-100 via-green-50 to-green-200 rounded-2xl shadow-2xl max-w-md mx-auto border border-green-200">
+            <div className="flex flex-col items-center gap-2">
+              <Gift className="w-12 h-12 text-green-500 mb-2 drop-shadow-lg" />
+              <h2 className="text-3xl font-extrabold text-green-900 mb-1 text-center drop-shadow-sm">
+                {t("Kunlik bonusingizni oling!")}
+              </h2>
+              <p className="text-green-800 text-center mb-2 max-w-xs text-base font-medium">
+                {t(
+                  "Har куни бонус олиш имкониятидан фойдаланинг ва ўз даромадингизни оширинг."
+                )}
+              </p>
+            </div>
+            <button
+              className="w-full bg-gradient-to-r from-green-600 to-green-400 hover:from-green-700 hover:to-green-500 text-white font-bold py-3 rounded-xl shadow-lg transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed text-lg tracking-wide"
+              onClick={handleGetBonus}
+              disabled={dailyEarnings.isPending}
+            >
+              {dailyEarnings.isPending
+                ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <RotateCw className="animate-spin w-5 h-5" />
+                    {t("Yuklanmoqda...")}
+                  </span>
+                )
+                : t("Bonusni olish")}
+            </button>
+            {dailyEarnings.isSuccess && (
+              <div className="mt-2 px-4 py-2 rounded-lg bg-green-100 text-green-800 font-semibold text-center border border-green-300 shadow">
+                {t("Bonus muvaffaqiyatli olindi!")}
+              </div>
+            )}
+            {dailyEarnings.isError && (
+              <div className="mt-2 px-4 py-2 rounded-lg bg-red-100 text-red-700 font-semibold text-center border border-red-300 shadow">
+                {t("Bonus olishda xatolik yuz berdi. Qayta urinib ko‘ring.")}
+
               </div>
             ) : (
               <p className="text-gray-600 dark:text-gray-300">
