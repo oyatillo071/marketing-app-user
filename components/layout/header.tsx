@@ -129,6 +129,129 @@ export default function Header() {
     }
   };
 
+  // Pul birliklari uchun valyuta kurslari (mock yoki API dan)
+  const CURRENCY_LIST = [
+    {
+      code: "UZS",
+      name: {
+        uz: "So'm",
+        ru: "Сум",
+        en: "UZS",
+        kz: "Сом",
+        kg: "Сом",
+        tj: "Сомон",
+        cn: "UZS",
+      },
+      symbol: "so'm",
+    },
+    {
+      code: "USD",
+      name: {
+        uz: "Dollar",
+        ru: "Доллар",
+        en: "USD",
+        kz: "Dollar",
+        kg: "Dollar",
+        tj: "Dollar",
+        cn: "USD",
+      },
+      symbol: "$",
+    },
+    {
+      code: "RUB",
+      name: {
+        uz: "Rubl",
+        ru: "Рубль",
+        en: "RUB",
+        kz: "Рубль",
+        kg: "Рубль",
+        tj: "Рубль",
+        cn: "RUB",
+      },
+      symbol: "₽",
+    },
+    {
+      code: "KZT",
+      name: {
+        uz: "Tenge",
+        ru: "Тенге",
+        en: "KZT",
+        kz: "Теңге",
+        kg: "Теңге",
+        tj: "Теңге",
+        cn: "KZT",
+      },
+      symbol: "₸",
+    },
+    {
+      code: "KGS",
+      name: {
+        uz: "Som",
+        ru: "Сом",
+        en: "KGS",
+        kz: "Сом",
+        kg: "Сом",
+        tj: "Сом",
+        cn: "KGS",
+      },
+      symbol: "сом",
+    },
+    {
+      code: "TJS",
+      name: {
+        uz: "Somoni",
+        ru: "Сомони",
+        en: "TJS",
+        kz: "Сомони",
+        kg: "Сомони",
+        tj: "Сомони",
+        cn: "TJS",
+      },
+      symbol: "смн",
+    },
+    {
+      code: "CNY",
+      name: {
+        uz: "Yuan",
+        ru: "Юань",
+        en: "CNY",
+        kz: "Юань",
+        kg: "Юань",
+        tj: "Юань",
+        cn: "¥",
+      },
+      symbol: "¥",
+    },
+  ];
+
+  // Kurslarni olish (mock yoki API)
+  const [currencyRates, setCurrencyRates] = useState<Record<string, number>>({
+    UZS: 1200,
+    USD: 1,
+    RUB: 90,
+    KZT: 450,
+    KGS: 89,
+    TJS: 11,
+    CNY: 7.2,
+  });
+  const [currencyLoading, setCurrencyLoading] = useState(false);
+
+  // Foydalanuvchi tanlagan tilni aniqlash
+  const { language } = useLanguage();
+
+  // 1 coin narxini har bir valyutada hisoblash
+  const getCoinComparisons = () => {
+    return CURRENCY_LIST.map((c) => {
+      const rate = currencyRates[c.code];
+      return {
+        code: c.code,
+        value: rate ? rate.toLocaleString() : "-",
+        symbol: c.symbol,
+        name: c.name[language] || c.code,
+      };
+    });
+  };
+
   return (
     <>
       <header className="bg-background border-b border-border z-40">
@@ -236,8 +359,38 @@ export default function Header() {
             </div>
           </div>
         </div>
+        {/* 1 coin narxi scroll (cheksiz aylanish) */}
+        <div className="w-full bg-muted border-t border-border py-1 overflow-hidden">
+          <div className="flex items-center relative gap-2">
+            <span className="text-base absolute backdrop-blur-lg p-3 z-20 text-muted-foreground">
+              {t("coin_rates") || "Coin narxlari"}:
+            </span>
+            <div className="w-full h-6 overflow-hidden relative">
+              <div
+                className="flex animate-scroll-left whitespace-nowrap min-w-full"
+                style={{
+                  animation: "scroll-left 20s linear infinite",
+                }}
+              >
+                {[...getCoinComparisons(), ...getCoinComparisons()].map(
+                  (item, idx) =>
+                    item && (
+                      <span
+                        key={item.code + "-" + idx}
+                        className="text-sm font-medium text-primary mx-4 flex-shrink-0"
+                      >
+                        1&nbsp;coin&nbsp;=&nbsp;
+                        <span className="font-semibold">{item.value}</span>
+                        &nbsp;{item.symbol} ({item.name})
+                      </span>
+                    )
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
         {/* Recent users carousel */}
-        {recentUsers.length > 0 && (
+        {/* {recentUsers.length > 0 && (
           <div className="w-full bg-muted border-t border-border py-1 overflow-hidden">
             <div className="flex items-center justify-between relative gap-2">
               <span className="text-base absolute backdrop-blur-lg p-3 z-20  text-muted-foreground">
@@ -279,7 +432,7 @@ export default function Header() {
               </div>
             </div>
           </div>
-        )}
+        )} */}
       </header>
       {/* Mobil menyu qismi */}
       {isMenuOpen && (
@@ -346,6 +499,16 @@ export default function Header() {
           ) : null}
         </div>
       )}
+      <style jsx global>{`
+        @keyframes scroll-left {
+          0% {
+            transform: translateX(0%);
+          }
+          100% {
+            transform: translateX(-50%);
+          }
+        }
+      `}</style>
     </>
   );
 }

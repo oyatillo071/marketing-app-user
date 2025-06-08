@@ -151,3 +151,22 @@
 .carousel-dot.active {
   background-color: #888f74;
 }
+
+.violett {
+  background-color: violet;
+}
+
+.scroll-marquee {
+  display: flex;
+  animation: marquee 5s linear infinite;
+  max-width: 35%;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}

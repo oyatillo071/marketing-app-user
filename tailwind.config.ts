@@ -61,6 +61,10 @@ const config = {
         sans: ["Montserrat", "ui-sans-serif", "system-ui", "sans-serif"],
       },
       keyframes: {
+        marquee: {
+          "0%": { transform: "translateX(0%)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
         "accordion-down": {
           from: { height: "0" },
           to: { height: "var(--radix-accordion-content-height)" },
@@ -75,6 +79,7 @@ const config = {
         },
       },
       animation: {
+        "scroll-marquee": "marquee 20s linear infinite",
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "spin-wheel": "spin-wheel 5s cubic-bezier(0.17, 0.67, 0.83, 0.67)",
